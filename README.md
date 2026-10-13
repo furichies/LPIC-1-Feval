@@ -63,7 +63,7 @@ Estrategia: 107.1 (w5, el objetivo de mayor peso) + 109 + 108.2 son el núcleo. 
 
 Contenido propio, estética LPI: portada + índice + diapo por objetivo + tabla de comandos + lab + quiz + soluciones + créditos. Imágenes de Wikimedia Commons con atribución (ver diapo final de cada PDF).
 
-## 🖥️ App de prácticas web (carpeta [`docs/`](docs/), GitHub Pages)
+## 🖥️ App de prácticas web ([publicada aquí](https://furichies.github.io/LPIC-1-Feval/), carpeta `docs/`)
 
 812 preguntas solo de 101+102, sin referencias de origen: modos completo / reducido / práctica / personalizado y estadísticas locales.
 
@@ -71,7 +71,7 @@ Contenido propio, estética LPI: portada + índice + diapo por objetivo + tabla 
 
 1. 📖 Por objetivo: `README` → `RESUMEN` (+`man`) → `EJERCICIOS` en VM (Debian + Rocky) → repasa con su app `tools/`.
 2. 📝 Haz los `prev-quest/` antes de cada bloque y los `post-quest/` después.
-3. ✅ Practica en la [app web](docs/) hasta ≥60% estable (apto orientativo ≥480/800).
+3. ✅ Practica en la [app web](https://furichies.github.io/LPIC-1-Feval/) hasta ≥60% estable (apto orientativo ≥480/800).
 4. 🔗 Contrasta siempre con la documentación oficial de abajo.
 
 ## 🔗 Documentación oficial LPI
@@ -86,7 +86,6 @@ Contenido propio, estética LPI: portada + índice + diapo por objetivo + tabla 
 | 📗 Learning Materials 102-500 | https://learning.lpi.org/es/learning-materials/102-500/ |
 | 📕 PDF oficial 101-500 (descarga LPI) | https://learning.lpi.org/pdfstore/LPI-Learning-Material-101-500-es.pdf |
 | 📙 PDF oficial 102-500 (descarga LPI) | https://learning.lpi.org/pdfstore/LPI-Learning-Material-102-500-es.pdf |
-| 💻 Repositorio GitHub oficial LPI | https://github.com/LinuxProfessional |
 | 📝 Exámenes (Pearson VUE / LPI) | https://www.lpi.org/es/exam-pricing/ |
 
 Recursos libres complementarios: [Arch Wiki](https://wiki.archlinux.org/) · [Debian Reference](https://www.debian.org/doc/) · [RHEL Documentation](https://docs.redhat.com/) · [man7.org](https://man7.org/linux/man-pages/) · [FHS 3.0](https://refspecs.linuxfoundation.org/FHS_3.0/fhs/index.html).
