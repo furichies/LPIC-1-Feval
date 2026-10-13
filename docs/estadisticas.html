@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estadísticas — LPI Test</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+<nav class="bg-white shadow-lg"><div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+<a href="index.html" class="text-xl font-bold text-green-800"><i class="fab fa-linux mr-2"></i>LPI Test</a>
+<div><a href="index.html" class="text-sm mr-4">Inicio</a><a href="recursos.html" class="text-sm">Recursos</a></div></div></nav>
+<main class="max-w-5xl mx-auto py-8 px-4">
+<h1 class="text-3xl font-bold text-green-800 mb-6">Estadísticas de rendimiento</h1>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-3xl font-bold text-green-700" id="bestScore">0%</div><div class="text-sm text-gray-500">Mejor puntuación</div></div>
+<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-3xl font-bold" id="testsCompleted">0</div><div class="text-sm text-gray-500">Tests completados</div></div>
+<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-3xl font-bold" id="avgTime">—</div><div class="text-sm text-gray-500">Tiempo medio</div></div>
+<div class="bg-white rounded-xl shadow p-5 text-center"><div class="text-3xl font-bold" id="currentStreak">0</div><div class="text-sm text-gray-500">Racha</div></div>
+</div>
+<div class="bg-white rounded-xl shadow p-6 mb-8"><h2 class="font-bold mb-4">Rendimiento por examen</h2>
+<table class="w-full text-sm"><tbody id="categoryTable"></tbody></table></div>
+<div class="bg-white rounded-xl shadow p-6"><h2 class="font-bold mb-4">Historial (últimos 10)</h2><ul id="historyList"></ul></div>
+</main>
+<script src="estadisticas.js"></script>
+</body>
+</html>

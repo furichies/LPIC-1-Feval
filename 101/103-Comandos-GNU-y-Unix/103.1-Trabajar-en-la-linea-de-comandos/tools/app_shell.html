@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.1 Línea de comandos · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa;
+  --ok:#1a7f37;
+  --ko:#b3261e
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px
+}
+
+.card {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px 4px 4px 0
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+input,select,textarea {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem;
+  width:100%;
+  margin:4px 0
+}
+
+textarea {
+  font-family:monospace
+}
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:90px
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.92rem
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:6px
+}
+td {
+  border:1px solid #c9d2e0;
+  padding:6px
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.1 Trabajar en la línea de comandos</h1>
+<div><span class="badge">Objetivo 103.1</span><span class="badge">Peso 4</span><span class="badge">Examen 101-500</span></div>
+<p style="margin:8px 0 0">Variables · type/which · historial · man · comillas · Material didáctico propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Variables, export y type vs which</h2>
+<p>Las variables de shell viven solo en tu shell; <b>export</b> las hereda a los hijos. <b>type</b> dice qué es un comando (alias, builtin, fichero); <b>which</b> solo busca en el <b>PATH</b>.</p>
+<div class="grid">
+<div class="card"><b>Laboratorio de variables</b>
+<input id="vn" value="CURSO" placeholder="NOMBRE"><input id="vv" value="LPIC1" placeholder="valor">
+<button onclick="setV(false)">VAR=valor</button><button onclick="setV(true)">export VAR</button>
+<button class="sec" onclick="showEnv()">env | grep CURSO</button><pre id="t1">$ _</pre></div>
+<div class="card"><b>type vs which</b>
+<select id="cmd"><option value="cd">cd</option><option value="echo">echo</option><option value="ls">ls</option><option value="man">man</option><option value="miprog">miprog</option></select>
+<button onclick="typeWhich()">type + which</button><pre id="t2">$ _</pre></div>
+<div class="card"><b>Comillas</b>
+<select id="qsel"><option value="d">dobles " "</option><option value="s">simples ' '</option><option value="b">invertidas ` ` / $()</option></select>
+<button onclick="quotes()">Probar con $USER</button><pre id="t3">$ _</pre></div>
+</div>
+<div class="expl" id="e1">Fija una variable y pulsa los botones: verás la diferencia entre shell-local y exportada.</div>
+</section>
+<section>
+<h2>2 · man por secciones, historial y one-liners</h2>
+<table><tr><th>Sección man</th><th>Contiene</th><th>Ejemplo</th></tr>
+<tr><td>1</td><td>Comandos usuario</td><td><code>man 1 passwd</code></td></tr>
+<tr><td>5</td><td>Ficheros config</td><td><code>man 5 passwd</code></td></tr>
+<tr><td>8</td><td>Admin sistema</td><td><code>man 8 fdisk</code></td></tr></table>
+<div class="grid" style="margin-top:10px">
+<div class="card"><b>Historial (!! · !n · Ctrl+R)</b>
+<button onclick="hist('h')">history</button><button onclick="hist('b')">!! repite</button><button onclick="hist('e')">!42 ejecuta nº42</button><pre id="t4">$ _</pre></div>
+<div class="card"><b>Tester de one-liners</b>
+<input id="one" value='echo "hola $USER"; uname -m'>
+<button onclick="one()">Ejecutar (simulado)</button><pre id="t5">$ _</pre></div>
+</div>
+<div class="expl">Truco examen: <b>man -k palabra</b> (apropos) busca por tema; <b>whatis</b> da 1 línea. <b>~/.bash_history</b> guarda al salir; <b>HISTCONTROL=ignorespace</b> ignora lo que empieza por espacio.</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let V={};
+function setV(x){const n=document.getElementById('vn').value.trim()||'VAR',v=document.getElementById('vv').value;
+V[n]={v:v,ex:x};document.getElementById('t1').textContent='$ '+(x?'export ':'')+n+'="'+v+'"\n[hijo bash] '+(x?v+' ← heredada (exportada)':'(vacío) ← local, no exportada');
+document.getElementById('e1').innerHTML=x?'<b>export</b> marca la variable para los procesos hijos (env la muestra).':'Sin <b>export</b> solo existe en el shell actual (set la muestra, env no).';}
+function showEnv(){const k=document.getElementById('vn').value.trim()||'VAR',e=V[k];
+document.getElementById('t1').textContent='$ env | grep '+k+'\n'+(e&&e.ex?k+'='+e.v+'\n[encontrada en entorno]':'(sin salida) ← no exportada o inexistente');}
+function typeWhich(){const c=document.getElementById('cmd').value;let t,w;
+if(c==='cd')t='cd es una orden interna del shell (builtin)',w='(which no muestra nada: no está en PATH)';
+else if(c==='echo')t='echo es una orden interna del shell',w='/usr/bin/echo ← copia externa en PATH';
+else if(c==='ls')t='ls tiene alias «ls --color=auto»',w='/usr/bin/ls';
+else if(c==='man')t='man es /usr/bin/man',w='/usr/bin/man';
+else t='bash: type: '+c+': no se encontró',w='(which tampoco: fuera del PATH → ejecuta con ./ o ruta absoluta)';
+document.getElementById('t2').textContent='$ type '+c+'\n'+t+'\n$ which '+c+'\n'+w;}
+function quotes(){const s=document.getElementById('qsel').value;let r;
+if(s==='d')r='$ echo "hola $USER"\nhola richi ← dobles: expanden $VAR y $(...)';
+else if(s==='s')r="$ echo 'hola $USER'\nhola $USER ← simples: todo literal";
+else r='$ echo "hoy es $(date +%A)"\nhoy es domingo ← $() ejecuta y sustituye (mejor que ``)';
+document.getElementById('t3').textContent=r;}
+function hist(m){const p=document.getElementById('t4');
+if(m==='h')p.textContent='$ history\n  40  ls -l\n  41  man 5 passwd\n  42  df -h\n  43  echo $PATH';
+if(m==='b')p.textContent='$ !!\n$ df -h\n/dev/sda1  20G  8G  12G 40% / ← repitió la última';
+if(m==='e')p.textContent='$ !42\ndf -h ← ejecutó la línea 42 del historial';}
+function one(){const c=document.getElementById('one').value,p=document.getElementById('t5');let out='$ '+c+'\n';
+if(c.includes('uname'))out+='x86_64 ← uname -m: arquitectura\n';
+if(c.includes('$USER')||c.includes('echo'))out+='[echo expandió variables entre comillas dobles]\n';
+if(c.includes(';'))out+='[; encadena: el 2º corre aunque falle el 1º. Con && solo si el 1º logra éxito]\n';
+if(!c.trim())out='Escribe un one-liner primero.';p.textContent=out;}
+const P=[
+
+{q:"export CURSO=LPIC sirve para…",o:["Hacerla visible a procesos hijos","Borrarla al salir","Cambiar el PATH"],c:0},
+
+{q:"type cd frente a which cd:",o:["which lo encuentra en PATH","type revela que es builtin; which no lo halla","Son idénticos"],c:1},
+
+{q:"echo '$HOME' muestra:",o:["/home/usuario","$HOME literal","Error"],c:1},
+
+{q:"Para leer la página del fichero /etc/passwd (no del comando):",o:["man passwd","man 5 passwd","whatis passwd"],c:1},
+
+{q:"!! hace…",o:["Repite el último comando","Borra el historial","Busca con Ctrl+R"],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Shell dominado!':n>=3?'Bien, repasa export y man.':'Relee la sección 1.');}
+</script>
+</body>
+</html>

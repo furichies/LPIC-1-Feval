@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.4 Pipes y Redirecciones · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa;
+  --ok:#1a7f37;
+  --ko:#c0392b
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.4rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.flow {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  align-items:center;
+  background:#0b1e3a;
+  color:#fff;
+  padding:14px;
+  border-radius:10px;
+  margin-top:10px
+}
+
+.box {
+  background:#fff;
+  color:#111;
+  border-radius:8px;
+  padding:8px 12px;
+  min-width:110px;
+  text-align:center;
+  font-family:monospace
+}
+
+.arrow {
+  font-size:1.4rem;
+  color:var(--am);
+  font-weight:900
+}
+
+select,input[type=text] {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:90px
+}
+
+.fd {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+  margin-top:10px
+}
+
+.fd div {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px;
+  text-align:center
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.4 Usar flujos, pipes y redirecciones</h1>
+<div><span class="badge">Objetivo 103.4</span><span class="badge">Peso 4</span><span class="badge">Examen 101-500</span></div>
+<p style="margin:8px 0 0">stdin (0) · stdout (1) · stderr (2) · Redacción propia con fines didácticos.</p>
+</header>
+<main>
+<section>
+<h2>1 · Constructor visual de pipelines</h2>
+<p>Elige dos comandos y el conector. Observa por dónde viajan los datos.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<select id="c1">
+<option value="ls -l /etc">ls -l /etc</option>
+<option value="cat syslog">cat /var/log/syslog</option>
+<option value="ps aux">ps aux</option>
+<option value="dmesg">dmesg</option>
+<option value="find /etc -name *.conf">find /etc -name "*.conf"</option>
+</select>
+<select id="op">
+<option value="|">| pipe</option>
+<option value="|>tee">| tee</option>
+<option value="|xargs">| xargs</option>
+<option value=">">> (stdout a fichero)</option>
+<option value=">>">>> (añadir)</option>
+<option value="2>">2&gt; (stderr a fichero)</option>
+<option value="2>&1">2&gt;&amp;1 (unir flujos)</option>
+</select>
+<select id="c2">
+<option value="grep ssh">grep ssh</option>
+<option value="sort">sort</option>
+<option value="wc -l">wc -l</option>
+<option value="less">less</option>
+<option value="salida.txt">salida.txt</option>
+<option value="error.log">error.log</option>
+</select>
+<button onclick="construir()">Montar tubería</button>
+</div>
+<div class="flow" id="flow"><div class="box">—</div></div>
+<pre id="term">$ _</pre>
+<div class="expl" id="expl">Pulsa «Montar tubería» para ver la explicación del flujo.</div>
+</section>
+<section>
+<h2>2 · Laboratorio: tee y xargs</h2>
+<p><b>tee</b> bifurca: muestra en pantalla y guarda en fichero. <b>xargs</b> convierte stdin en argumentos.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+<button onclick="demo('tee')">Probar tee</button>
+<button onclick="demo('xargs')">Probar xargs</button>
+<button onclick="demo('err')">Probar 2&gt; error</button>
+<button class="sec" onclick="document.getElementById('term2').textContent='$ _'">Limpiar</button>
+</div>
+<pre id="term2">$ _</pre>
+<div class="fd">
+<div><b>FD 0</b><br>stdin<br>teclado / pipe</div>
+<div><b>FD 1</b><br>stdout<br>éxito → pantalla</div>
+<div><b>FD 2</b><br>stderr<br>errores → pantalla</div>
+</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const EX={
+"|":"El pipe <b>|</b> conecta la <b>stdout (1)</b> de la izquierda con la <b>stdin (0)</b> de la derecha. Solo viajan datos correctos; los errores siguen a pantalla salvo 2>&1.",
+"|>tee":"Con <b>| tee fichero</b> duplicas el flujo: sigue al siguiente comando <b>y</b> se guarda en fichero. Con <b>-a</b> añade en vez de sobrescribir.",
+"|xargs":"<b>xargs</b> lee líneas de stdin y las pone como argumentos: <i>find … | xargs rm</i>. Útil cuando un comando no lee por pipe (rm, cp, mkdir).",
+">":"<b>&gt;</b> redirige stdout a fichero (sobrescribe). <b>&gt;&gt;</b> añade. Ejemplo: <i>ls &gt; lista.txt</i>.",
+">>":"<b>&gt;&gt;</b> conserva el contenido previo y añade al final. Ideal para logs.",
+"2>":"<b>2&gt;</b> redirige solo errores: <i>find / 2&gt; errores.log</i> deja la pantalla limpia de 'Permission denied'.",
+"2>&1":"<b>2&gt;&amp;1</b> une stderr con stdout para guardar <b>todo</b>: <i>make &gt; todo.log 2&gt;&amp;1</i>."
+};
+function construir(){
+ const a=document.getElementById('c1').value,b=document.getElementById('c2').value;
+ let o=document.getElementById('op').value, cmd, key=o;
+ if(o==='|>tee'){cmd=a+' | tee '+b+' | '+ 'grep …';key='|>tee';}
+ else if(o==='|xargs'){cmd=a+' | xargs '+b;key='|xargs';}
+ else cmd=a+' '+o+' '+b;
+ if(o==='|' )key='|'; if(o==='>')key='>'; if(o==='>>')key='>>'; if(o==='2>')key='2>'; if(o==='2>&1')key='2>&1';
+ document.getElementById('flow').innerHTML='<div class="box">'+a+'</div><div class="arrow">➜ '+o.replace('>','❯')+'</div><div class="box">'+b+'</div><div class="arrow">➜</div><div class="box">pantalla / fichero</div>';
+ document.getElementById('term').textContent='$ '+cmd+'\n[simulación] flujo stdout → '+(o.includes('>')&&!o.includes('|')?'fichero '+b:'siguiente comando')+'\nstderr se mantiene en terminal salvo 2> / 2>&1.';
+ document.getElementById('expl').innerHTML=EX[key];
+}
+function demo(t){
+ const p=document.getElementById('term2');
+ if(t==='tee')p.textContent='$ ps aux | tee procesos.txt | grep root\nroot 1 /sbin/init\nroot 312 /usr/sbin/sshd\n[+ copia completa guardada en procesos.txt]';
+ if(t==='xargs')p.textContent='$ find /etc -name "*.old" | xargs rm -v\nremoved /etc/app.old\nremoved /etc/cache.old\n[xargs convirtió cada línea en argumento de rm]';
+ if(t==='err')p.textContent='$ find /root -name "*.conf" 2> errores.log\n/etc… resultados correctos en pantalla\n[los “Permission denied” fueron a errores.log, FD 2]';
+}
+const P=[
+{q:"¿Qué hace ls > f.txt?",o:["Añade al final","Sobrescribe f.txt con stdout","Redirige errores"],c:1},
+{q:"¿Qué transporta un pipe |?",o:["stdout → stdin del siguiente","stderr a fichero","Señales de proceso"],c:0},
+{q:"¿Para qué sirve 2> errores.log?",o:["Guardar stdout","Guardar solo stderr","Unir ambos flujos"],c:1},
+{q:"¿Qué hace tee?",o:["Borra ficheros","Duplica: pantalla + fichero","Ordena texto"],c:1},
+{q:"¿Cuándo usar xargs?",o:["Siempre con grep","Cuando el comando no lee stdin (ej. rm) y hay que pasar args","Para matar procesos"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Dominas los flujos!':n>=3?'Bien, repasa tee/xargs.':'Relee la sección 1.');}
+</script>
+</body>
+</html>

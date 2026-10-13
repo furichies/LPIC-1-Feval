@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.5 Procesos · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa;
+  --ok:#1a7f37;
+  --ko:#c0392b
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+pre {
+  background:#0b1e3a;
+  color:#8ef0a4;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:100px
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+button:hover {
+  background:#013d80
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+.tree {
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0
+}
+
+.node {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px 14px;
+  font-family:monospace;
+  text-align:center
+}
+
+.node b {
+  color:var(--az)
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px
+}
+
+th {
+  background:var(--az);
+  color:#fff;
+  padding:8px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:8px
+}
+
+tr:nth-child(even) {
+  background:#f1f5fb
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.tip {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.5 Crear, monitorizar y terminar procesos</h1>
+<div><span class="badge">Objetivo 103.5</span><span class="badge">Peso 4</span><span class="badge">ps · top · kill · jobs</span></div>
+<p style="margin:8px 0 0">fork · PID · señales · prioridades. Contenido propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Árbol fork y control de trabajos</h2>
+<p>Todo proceso nace de un <b>fork()</b> de su padre (PPID). Pulsa para simular el arranque y los trabajos en segundo plano.</p>
+<div>
+<button onclick="arrancar()">1 · Arrancar sistema (PID 1)</button>
+<button onclick="fork()">2 · fork() nuevo proceso</button>
+<button onclick="jobs('bg')">3 · Lanzar job en bg (&amp;)</button>
+<button onclick="jobs('fg')">Traer a fg (fg %1)</button>
+<button class="sec" onclick="reset()">Reiniciar</button>
+</div>
+<div class="tree" id="tree"></div>
+<pre id="tjobs">$ _ jobs de ejemplo aparecerán aquí</pre>
+<div class="tip">Recuerda: <b>jobs</b> lista trabajos del shell · <b>bg %1</b> reanuda en fondo · <b>fg %1</b> trae al frente · <b>&amp;</b> lanza directo en fondo · <b>nohup</b> inmuniza ante HUP.</div>
+</section>
+<section>
+<h2>2 · Simulador de señales kill</h2>
+<p>Elige señal y PID destino. Observa qué pasaría en un sistema real.</p>
+<table>
+<tr><th>Señal</th><th>Nº</th><th>Efecto</th><th>Capturable</th></tr>
+<tr><td>TERM</td><td>15</td><td>Terminación educada (por defecto)</td><td>Sí</td></tr>
+<tr><td>KILL</td><td>9</td><td>Muerte inmediata, sin limpieza</td><td>No</td></tr>
+<tr><td>HUP</td><td>1</td><td>Recargar config / cierre terminal</td><td>Sí</td></tr>
+<tr><td>INT</td><td>2</td><td>Ctrl+C</td><td>Sí</td></tr>
+<tr><td>STOP / CONT</td><td>19 / 18</td><td>Pausar / continuar (Ctrl+Z)</td><td>No / Sí</td></tr>
+</table>
+<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<label>Señal: <select id="sig"><option>TERM (15)</option><option>KILL (9)</option><option>HUP (1)</option><option>INT (2)</option><option>STOP (19)</option><option>CONT (18)</option></select></label>
+<label>PID: <select id="pid"><option>412 firefox</option><option>88 nginx</option><option>1201 backup.sh</option></select></label>
+<button onclick="matar()">Enviar kill</button>
+</div>
+<pre id="tkill">$ _</pre>
+</section>
+<section>
+<h2>3 · Quiz · ps / top / kill</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let n=0;const tree=document.getElementById('tree');
+function reset(){n=0;tree.innerHTML='';document.getElementById('tjobs').textContent='$ _';}
+function arrancar(){reset();tree.innerHTML='<div class="node"><b>systemd</b><br>PID 1<br>PPID 0</div>';log('jobs','$ systemd (PID 1) arrancado. Es antepasado de todo.');}
+function fork(){if(!tree.innerHTML)arrancar();n++;const pids=[412,88,1201,55];const names=['firefox','nginx','backup.sh','top'];const i=n%4;tree.innerHTML+='<div class="node">➜ <b>'+names[i]+'</b><br>PID '+pids[i]+'<br>PPID 1 (fork)</div>';log('jobs','$ fork(): creado '+names[i]+' PID '+pids[i]);}
+function jobs(m){const t=document.getElementById('tjobs');
+if(m==='bg')t.textContent='$ sleep 300 &\n[1] 2041\n$ jobs\n[1]+ Running  sleep 300 &';
+else t.textContent='$ fg %1\nsleep 300  (ahora en primer plano, Ctrl+Z para pausar, bg para devolver al fondo)';}
+function log(a,b){document.getElementById('tjobs').textContent=b;}
+function matar(){const s=document.getElementById('sig').value,p=document.getElementById('pid').value;
+let r='$ kill -'+s.split(' ')[0]+' '+p.split(' ')[0]+'\n';
+if(s.startsWith('KILL'))r+='→ Proceso '+p+': terminado de inmediato (sin guardar, no capturable). Usa solo como último recurso.';
+else if(s.startsWith('TERM'))r+='→ Proceso '+p+': recibe TERM, puede guardar y salir limpiamente. Es la forma correcta.';
+else if(s.startsWith('HUP'))r+='→ Proceso '+p+': recarga su configuración sin reiniciar (típico en demonios).';
+else if(s.startsWith('INT'))r+='→ Equivale a Ctrl+C en '+p+'.';
+else if(s.startsWith('STOP'))r+='→ '+p+' pausado (estado T). Reanúdalo con kill -CONT.';
+else r+='→ '+p+' reanudado (CONT).';
+document.getElementById('tkill').textContent=r;}
+const P=[
+{q:"¿Qué muestra ps aux?",o:["Todos los procesos con usuario y CPU/mem","Solo tus jobs","El árbol de discos"],c:0},
+{q:"¿Qué señal envía kill sin opciones?",o:["KILL (9)","TERM (15)","HUP (1)"],c:1},
+{q:"¿Qué señal NO se puede capturar ni ignorar?",o:["TERM y HUP","KILL (9) y STOP","INT y CONT"],c:1},
+{q:"¿Qué hace Ctrl+Z + bg?",o:["Mata el proceso","Pausa y lo pasa a segundo plano","Lo trae al frente"],c:1},
+{q:"¿Para qué sirve top / htop?",o:["Monitorizar procesos y carga en vivo","Editar fstab","Gestionar paquetes"],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡Gestor de procesos!':s>=3?'Bien, repasa señales.':'Repasa TERM vs KILL.');}
+</script>
+</body>
+</html>

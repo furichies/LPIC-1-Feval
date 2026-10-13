@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>104.1 LVM y Particiones · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.lvm {
+  display:flex;
+  gap:6px;
+  align-items:stretch;
+  flex-wrap:wrap;
+  margin:10px 0
+}
+
+.capa {
+  flex:1;
+  min-width:150px;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  border:3px solid var(--az)
+}
+
+.pv {
+  background:#dbe7fb
+}
+.vg {
+  background:#fff3c4
+}
+.lv {
+  background:#d9f2df
+}
+
+.bar {
+  height:14px;
+  background:#c9d4e6;
+  border-radius:7px;
+  overflow:hidden;
+  margin-top:8px
+}
+
+.bar i {
+  display:block;
+  height:100%;
+  background:var(--az)
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+pre {
+  background:#0b1e3a;
+  color:#8ef0a4;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:110px
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 104.1 Particiones, sistemas de ficheros y LVM</h1>
+<div><span class="badge">Objetivo 104.1</span><span class="badge">Peso 2</span><span class="badge">fdisk · mkfs · PV/VG/LV</span></div>
+<p style="margin:8px 0 0">Flujo PV → VG → LV con ejemplos propios de laboratorio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Constructor LVM: PV → VG → LV</h2>
+<p>Añade discos físicos, crea el grupo y reparte volúmenes lógicos.</p>
+<div>
+<button onclick="addPV()">+ Añadir PV (10G)</button>
+<button onclick="mkVG()">Crear VG datos</button>
+<button onclick="mkLV()">+ Crear LV (5G)</button>
+<button onclick="extend()">Extender último LV +5G</button>
+<button onclick="snap()">Crear snapshot</button>
+<button class="sec" onclick="reset()">Reiniciar</button>
+</div>
+<div class="lvm">
+<div class="capa pv"><b>PV</b><div id="pvs">—</div></div>
+<div class="capa vg"><b>VG «datos»</b><div id="vgs">—</div><div class="bar"><i id="bvg" style="width:0%"></i></div></div>
+<div class="capa lv"><b>LV</b><div id="lvs">—</div></div>
+</div>
+<pre id="t">$ laboratorio LVM listo. Pulsa «Añadir PV».</pre>
+</section>
+<section>
+<h2>2 · Particionado y formato (fdisk / gdisk / mkfs)</h2>
+<p>MBR (<b>fdisk</b>) para discos clásicos · GPT (<b>gdisk</b>) para discos grandes y UEFI. Después se formatea.</p>
+<table>
+<tr><th>Paso</th><th>MBR / fdisk</th><th>GPT / gdisk</th></tr>
+<tr><td>Ver discos</td><td colspan="2"><code>lsblk · blkid · parted -l</code></td></tr>
+<tr><td>Particionar</td><td><code>fdisk /dev/sdb</code> (n,p,w)</td><td><code>gdisk /dev/sdb</code> (n, 8300, w)</td></tr>
+<tr><td>Formatear</td><td colspan="2"><code>mkfs.ext4 /dev/sdb1 · mkfs.xfs /dev/vg/lv1 · mkswap /dev/sdb2</code></td></tr>
+<tr><td>Ver FS</td><td colspan="2"><code>df -hT · tune2fs -l · xfs_info</code></td></tr>
+</table>
+<div style="margin-top:8px">
+<label>Sistema: <select id="fs"><option value="mkfs.ext4 /dev/datos/web">ext4 (general)</option><option value="mkfs.xfs /dev/datos/videos">XFS (ficheros grandes)</option><option value="mkfs.vfat -F 32 /dev/sdb1">vfat (USB/EFI)</option><option value="mkswap /dev/sdb2; swapon /dev/sdb2">swap</option></select></label>
+<button onclick="formatear()">Simular mkfs</button>
+</div>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let pv=0,lv=[],total=0;
+function log(m){document.getElementById('t').textContent=m;}
+function paint(){
+ document.getElementById('pvs').textContent=pv?pv+' × 10G = '+(pv*10)+'G':'—';
+ total=pv*10; let usado=lv.reduce((a,b)=>a+b.g,0);
+ document.getElementById('vgs').textContent=pv?('VG datos: '+total+'G · libre '+(total-usado)+'G'):'—';
+ document.getElementById('bvg').style.width=pv?Math.min(100,usado/total*100)+'%':'0%';
+ document.getElementById('lvs').innerHTML=lv.length?lv.map(l=>'💽 '+l.n+' '+l.g+'G'+(l.snap?' (snap)':'')).join('<br>'):'—';
+}
+function addPV(){pv++;paint();log('$ pvcreate /dev/sd'+String.fromCharCode(96+pv)+'\n Physical volume creado. Total PV: '+pv+' ('+(pv*10)+'G)');}
+function mkVG(){if(!pv){log('⚠ Primero añade al menos un PV.');return;}paint();log('$ vgcreate datos /dev/sdb /dev/sdc …\n Volume group «datos» con '+(pv*10)+'G.');}
+function mkLV(){if(!pv){log('⚠ Sin VG no hay LV.');return;}let usado=lv.reduce((a,b)=>a+b.g,0);if(usado+5>pv*10){log('⚠ Sin espacio en VG. Añade otro PV o extiende el VG (vgextend).');return;}lv.push({n:'lv'+(lv.length+1),g:5});paint();log('$ lvcreate -n lv'+lv.length+' -L 5G datos\n LV creado. Recuerda: mkfs.ext4 /dev/datos/lv'+lv.length);}
+function extend(){if(!lv.length){log('⚠ Crea antes un LV.');return;}let usado=lv.reduce((a,b)=>a+b.g,0);if(usado+5>pv*10){log('⚠ VG lleno: haz vgextend con un PV nuevo y luego lvextend -r +5G.');return;}lv[lv.length-1].g+=5;paint();log('$ lvextend -r -L +5G /dev/datos/'+lv[lv.length-1].n+'\n Ampliado en caliente (+5G) y FS crecido con -r.');}
+function snap(){if(!lv.length){log('⚠ Sin LV no hay snapshot.');return;}lv.push({n:'snap-'+Date.now()%1000,g:1,snap:true});paint();log('$ lvcreate -s -n snap -L 1G /dev/datos/lv1\n Snapshot: foto congelada para copias coherentes.');}
+function reset(){pv=0;lv=[];paint();log('$ laboratorio reiniciado.');}
+function formatear(){const v=document.getElementById('fs').value;log('$ '+v+'\nmke2fs / tune2fs: sistema creado. Comprueba con lsblk -f y df -hT.');}
+const P=[
+{q:"Orden correcto del flujo LVM",o:["LV→VG→PV","PV→VG→LV","VG→PV→LV"],c:1},
+{q:"¿Qué herramienta para GPT/UEFI?",o:["fdisk","gdisk","mkswap"],c:1},
+{q:"¿Qué hace lvextend -r?",o:["Borra el LV","Amplía el LV y el FS","Crea un snapshot"],c:1},
+{q:"¿Para qué sirve un snapshot LVM?",o:["Acelerar el disco","Foto congelada para copia coherente","Formatear en XFS"],c:1},
+{q:"¿Qué comando crea un FS ext4?",o:["mkfs.ext4 /dev/…","fdisk /dev/…","lvs"],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡LVM dominado!':s>=3?'Bien, repasa vgextend/lvextend.':'Relee el flujo PV→VG→LV.');}
+paint();
+</script>
+</body>
+</html>

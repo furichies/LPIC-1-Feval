@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.7 Regex · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+textarea,input[type=text],select {
+  width:100%;
+  padding:9px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem;
+  font-family:monospace
+}
+
+.row {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+@media(max-width:700px) {
+  .row {
+  grid-template-columns:1fr
+}
+
+}
+
+#out {
+  background:#0b1e3a;
+  color:#eee;
+  border-radius:10px;
+  padding:12px;
+  min-height:110px;
+  white-space:pre-wrap;
+  font-family:monospace
+}
+
+mark {
+  background:var(--am);
+  color:#000;
+  border-radius:3px;
+  padding:0 2px
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px;
+  font-family:monospace
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.switch {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  background:#eef3fa;
+  border-radius:8px;
+  padding:8px;
+  margin:8px 0
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.7 Buscar texto con expresiones regulares</h1>
+<div><span class="badge">Objetivo 103.7</span><span class="badge">Peso 3</span><span class="badge">grep · sed · BRE/ERE</span></div>
+<p style="margin:8px 0 0">Patrones propios de práctica, redacción original.</p>
+</header>
+<main>
+<section>
+<h2>1 · Tester regex en vivo (BRE ⇄ ERE)</h2>
+<div class="switch">
+<label><input type="radio" name="m" value="ERE" checked onchange="test()"> <b>ERE</b> (grep -E)</label>
+<label><input type="radio" name="m" value="BRE" onchange="test()"> <b>BRE</b> (grep básico)</label>
+<span id="aviso" style="font-size:.9rem;color:#555"></span>
+</div>
+<div class="row">
+<div><label>Patrón:<input type="text" id="pat" value="ssh.*failed" oninput="test()"></label>
+<label>Opciones:<select id="opt" onchange="test()"><option value="">grep patrón fichero</option><option value="i">grep -i (insensible)</option><option value="v">grep -v (invertir)</option></select></label></div>
+<div><label>Texto de prueba:<textarea id="txt" rows="6" oninput="test()">Accepted ssh for root
+Failed ssh login for admin
+FAILED SSH attempt
+telnet connection open
+ssh2 failed password</textarea></label></div>
+</div>
+<div id="out"></div>
+<table>
+<tr><th>BRE</th><th>ERE</th><th>Significado</th></tr>
+<tr><td>\( \)</td><td>( )</td><td>Grupo</td></tr>
+<tr><td>\{2,4\}</td><td>{2,4}</td><td>Repetición</td></tr>
+<tr><td>\+</td><td>+</td><td>Una o más</td></tr>
+<tr><td>.* ^ $ [a-z]</td><td>igual</td><td>Iguales en ambos</td></tr>
+</table>
+</section>
+<section>
+<h2>2 · Retos grep / sed</h2>
+<p>Pulsa cada reto para ver la solución explicada:</p>
+<button onclick="reto(1)">Reto 1: líneas que empiezan por #</button>
+<button onclick="reto(2)">Reto 2: sustituir con sed</button>
+<button onclick="reto(3)">Reto 3: ERE con +</button>
+<pre id="r" style="background:#0b1e3a;color:#8ef0a4;border-radius:10px;padding:12px;min-height:80px">$ pulsa un reto…</pre>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+function test(){
+ const pat=document.getElementById('pat').value, txt=document.getElementById('txt').value;
+ const mode=document.querySelector('input[name=m]:checked').value, opt=document.getElementById('opt').value;
+ const av=document.getElementById('aviso'), out=document.getElementById('out');
+ if(mode==='BRE'&&/[()+?{|}]/.test(pat)&&!pat.includes('\\'))av.textContent='⚠ En BRE + ( ) { } son literales salvo que los escapes (\\+, \\(, \\{).';
+ else if(mode==='ERE')av.textContent='ERE: + ( ) { } | ? tienen significado especial sin escapar.';
+ else av.textContent='';
+ let flags=opt==='i'?'gi':'g', re;
+ try{re=new RegExp(pat,flags);}catch(e){out.textContent='Patrón inválido: '+e.message;return;}
+ let n=0;
+ const html=txt.split('\n').map(line=>{
+   const hit=re.test(line);re.lastIndex=0;
+   let show=line.replace(re,m=>{n++;return '<mark>'+m+'</mark>';});
+   const ok=opt==='v'?!hit:hit;
+   return (ok?'✔ ':'✘ ')+show;
+ }).join('\n');
+ out.innerHTML='Modo '+mode+' · coincidencias resaltadas: '+n+'\n'+html;
+}
+function reto(i){const r=document.getElementById('r');
+ if(i===1)r.textContent="$ grep '^#' /etc/ssh/sshd_config\n# líneas de comentario (^ = inicio de línea).\n$ grep -v '^#\\|^$' fichero  → quita comentarios y vacías.";
+ if(i===2)r.textContent="$ sed 's/http/https/' web.log\nsustituye primera ocurrencia por línea.\n$ sed -i 's/192.168.1.1/10.0.0.1/g' hosts  → -i edita fichero, g = todas.";
+ if(i===3)r.textContent="$ grep -E 'error|fail' app.log  (ERE: | alternancia)\n$ grep -E 'ah+[0-9]{2,}' datos  (+ = 1 o más, {2,} repetición ERE)\nEn BRE sería: grep 'ah\\+[0-9]\\{2,\\}' datos";}
+const P=[
+{q:"¿Qué ancla significa 'inicio de línea'?",o:["$","^","."],c:1},
+{q:"En BRE, ¿cómo se escribe 'una o más a'?",o:["a+","a\\+","a*"],c:1},
+{q:"¿Qué hace grep -v patrón?",o:["Muestra lo que NO coincide","Muestra solo número","Ignora mayúsculas"],c:0},
+{q:"¿Qué hace sed 's/viejo/nuevo/g'?",o:["Borra líneas","Sustituye todas las ocurrencias","Solo cuenta"],c:1},
+{q:"¿Qué hace grep -E '[0-9]{3}'?",o:["Busca 3 dígitos seguidos (ERE)","Busca llaves literales","Busca inicio de línea"],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡Regex dominada!':s>=3?'Bien, repasa BRE vs ERE.':'Practica más con el tester.');}
+test();
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>106.1 X11 · app_x11</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 100px;
+  white-space: pre-wrap;
+}
+.caja b {
+  color: var(--amar);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+input, select {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+.pila {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.nodo {
+  flex: 1;
+  min-width: 150px;
+  background: #eef3fa;
+  border: 2px solid var(--azul);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+.nodo b {
+  display: block;
+  color: var(--azul);
+}
+.nodo.on {
+  background: var(--amar);
+}
+</style>
+</head>
+<body>
+<header>
+<h1>106.1 Instalar y configurar X11 <span class="peso">Peso 2 · v5.0</span></h1>
+<p>Objetivo: inversión servidor/cliente X, pila DM → WM → DE,
+<code>DISPLAY</code>, <code>xhost/xauth</code>, X11 frente a Wayland.</p>
+</header>
+<main>
+<!-- 1: inversión -->
+<section>
+<h2>1 · La inversión que siempre cae: ¿quién es servidor?</h2>
+<p>En X, el <b>servidor X corre en tu pantalla/teclado</b> y el
+<b>cliente es el programa remoto</b> (al revés que la web).</p>
+<button onclick="rol('s')">Soy servidor X</button>
+<button onclick="rol('c')">Soy cliente (xterm)</button>
+<button onclick="rol('ssh')">X forwarding por SSH</button>
+<div class="caja" id="rol">Pulsa un rol…</div>
+<p>Toca cada capa de la pila gráfica:</p>
+<div class="pila">
+<div class="nodo" onclick="capa(0,this)"><b>DM</b><small>GDM / LightDM: login gráfico</small></div>
+<div class="nodo" onclick="capa(1,this)"><b>WM</b><small>decora y mueve ventanas</small></div>
+<div class="nodo" onclick="capa(2,this)"><b>DE</b><small>GNOME / KDE / Xfce completo</small></div>
+<div class="nodo" onclick="capa(3,this)"><b>Xorg</b><small>/etc/X11 + Xorg.0.log</small></div>
+</div>
+<div class="caja" id="capa">Toca una capa…</div>
+</section>
+<!-- 2: DISPLAY -->
+<section>
+<h2>2 · Constructor DISPLAY + control de acceso</h2>
+<p>Formato <code>host:display.pantalla</code>. Prueba:</p>
+<p>
+Host <input id="h" value="localhost" size="12">
+Display <input id="d" value="0" size="4">
+Pantalla <input id="p" value="0" size="4">
+<button onclick="display()">Generar DISPLAY</button>
+</p>
+<div class="caja" id="dout">DISPLAY=:0 …</div>
+<div class="nota">
+<code>xhost +localhost</code> (flojo, por host) frente a
+<code>xauth</code> (fuerte, cookie <code>~/.Xauthority</code>
+con <code>xauth list/add</code>). Vía SSH usa <code>ssh -X</code>
+y no toques xhost.
+</div>
+<table>
+<tr><th></th><th>X11</th><th>Wayland</th></tr>
+<tr><td>Red</td><td>Nativo (DISPLAY, x11vnc)</td><td>Compositor local; remoto vía RDP/PipeWire</td></tr>
+<tr><td>Seguridad</td><td>xhost débil / xauth mejor</td><td>Aislamiento por defecto</td></tr>
+<tr><td>Vars</td><td><code>$DISPLAY</code>, <code>xrandr</code></td><td><code>$WAYLAND_DISPLAY</code></td></tr>
+<tr><td>Logs</td><td><code>/var/log/Xorg.0.log</code></td><td>journal del compositor</td></tr>
+</table>
+</section>
+<!-- 3: comandos -->
+<section>
+<h2>3 · Comandos que debes reconocer</h2>
+<table>
+<tr><th>Comando</th><th>Para qué</th></tr>
+<tr><td><code>xdpyinfo | head</code></td><td>info del display actual</td></tr>
+<tr><td><code>xrandr</code></td><td>resoluciones y salidas</td></tr>
+<tr><td><code>xwininfo / xev</code></td><td>inspeccionar ventanas y eventos</td></tr>
+<tr><td><code>xauth list</code></td><td>ver cookies MIT-MAGIC</td></tr>
+<tr><td><code>loginctl / systemctl isolate graphical</code></td><td>gestión de sesión gráfica</td></tr>
+</table>
+<p>Config persistente en <code>/etc/X11/xorg.conf</code> y
+<code>xorg.conf.d/</code>. Salida gráfica objetivo
+<code>graphical.target</code> frente a <code>multi-user.target</code>.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 106.1 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Roles ----------
+function rol(k) {
+  let m = {
+    s: "<b>TÚ = servidor X:</b> dibujas ventanas, lees teclado/ratón.\nEl cliente (ej. xeyes en otro PC) te pide dibujar.\nFichero: /var/log/Xorg.0.log",
+    c: "<b>TÚ = cliente X:</b> pides dibujar al servidor.\nNecesitas DISPLAY=servidor:0 y permiso (xauth).\nEj: DISPLAY=192.168.1.10:0 xterm &",
+    ssh: "<b>SSH -X:</b> el túnel crea DISPLAY=localhost:10.0 solo.\nSeguro: no uses 'xhost +'. Autentica con MIT cookie."
+  };
+  document.getElementById("rol").textContent = m[k];
+}
+// ---------- Capas ----------
+const capas = [
+  "DM (Display Manager): GDM, LightDM, SDDM. Ofrece el login gráfico y arranca tu sesión.",
+  "WM (Window Manager): Openbox, i3, Mutter. Dibuja bordes, mueve y redimensiona.",
+  "DE (Desktop Environment): GNOME, KDE, Xfce. Pack completo: WM + panel + apps.",
+  "Xorg: servidor gráfico clásico. Config en /etc/X11, log en Xorg.0.log."
+];
+function capa(i, el) {
+  document.querySelectorAll(".nodo").forEach(function (n) {
+    n.classList.remove("on");
+  });
+  el.classList.add("on");
+  document.getElementById("capa").textContent = capas[i];
+}
+// ---------- DISPLAY ----------
+function display() {
+  let h = document.getElementById("h").value || "localhost";
+  let d = document.getElementById("d").value || "0";
+  let p = document.getElementById("p").value || "0";
+  let txt = "export DISPLAY=" + h + ":" + d + "." + p + "\n";
+  txt += "Significa: máquina " + h + ", servidor X nº " + d + ", pantalla " + p + "\n";
+  txt += "Probar: xdpyinfo | head · echo $DISPLAY";
+  document.getElementById("dout").textContent = txt;
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "En X11, el servidor es…", o: ["El programa remoto", "La máquina con pantalla/teclado", "El Display Manager"], c: 1,
+    e: "Servidor = donde están pantalla y teclado." },
+  { q: "Orden correcto de la pila gráfica:", o: ["DE→WM→DM", "DM→WM→DE", "WM→DM→DE"], c: 1,
+    e: "DM te loguea, WM gestiona ventanas, DE lo integra." },
+  { q: "DISPLAY=pc:1.0 significa…", o: ["host pc, display 1, pantalla 0", "puerto 1.0", "display 0"], c: 0,
+    e: "host:display.pantalla." },
+  { q: "Método más seguro de acceso X:", o: ["xhost +", "xauth con cookie", "desactivar firewall"], c: 1,
+    e: "xauth usa cookie MIT-MAGIC-COOKIE-1." },
+  { q: "Diferencia X11 vs Wayland:", o: ["Son idénticos", "X11 es red-transparente clásico; Wayland compone local y aísla", "Wayland usa DISPLAY"], c: 1,
+    e: "Wayland no usa DISPLAY sino WAYLAND_DISPLAY." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Xpert!" : n >= 3 ? "Bien" : "Relee la inversión servidor/cliente");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+display();
+</script>
+</body>
+</html>

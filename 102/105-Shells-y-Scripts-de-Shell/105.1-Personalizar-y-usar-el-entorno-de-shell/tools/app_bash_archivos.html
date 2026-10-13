@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>105.1 Entorno de shell · app_bash_archivos</title>
+<style>
+/* Estética LPI: azul #002855 + amarillo #FDB913 */
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+  --card: #ffffff;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Roboto, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+  opacity: 0.93;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px 4px 4px 0;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.flujo {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 130px;
+  margin-top: 8px;
+}
+.flujo b {
+  color: var(--amar);
+}
+.term {
+  background: #111;
+  color: #0f0;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 64px;
+  margin-top: 8px;
+}
+input, select {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+  margin: 3px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+.res {
+  font-weight: 700;
+  margin-top: 10px;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.tag {
+  display: inline-block;
+  background: var(--azul);
+  color: var(--amar);
+  border-radius: 6px;
+  padding: 1px 8px;
+  font-size: 0.78rem;
+  margin: 2px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>105.1 Personalizar y usar el entorno de shell <span class="peso">Peso 4 · v5.0</span></h1>
+<p>Objetivo: distinguir shell login / no-login, perfiles del sistema y de usuario,
+variables de entorno, prompt PS1, alias, funciones y ficheros Skeleton.</p>
+</header>
+<main>
+<!-- SECCIÓN 1: flujo de arranque -->
+<section>
+<h2>1 · Flujo de arranque: ¿qué ficheros se leen?</h2>
+<p>Elige el modo de invocación de bash y observa el orden exacto:</p>
+<button onclick="flujo('login')">Bash login interactiva</button>
+<button onclick="flujo('nologin')">Bash no-login interactiva</button>
+<button onclick="flujo('script')">Script no interactivo</button>
+<button class="sec" onclick="flujo('su')">su frente a su -</button>
+<div class="flujo" id="flujo">Pulsa un modo para ver la secuencia…</div>
+<p>
+<span class="tag">login</span> <code>/etc/profile</code> →
+<code>~/.bash_profile</code> (o <code>.bash_login</code> / <code>.profile</code>) →
+suele invocar a <code>~/.bashrc</code> · al salir: <code>~/.bash_logout</code>.
+</p>
+<p>
+<span class="tag">no-login</span> solo <code>/etc/bashrc</code> +
+<code>~/.bashrc</code>. Los scripts heredan el entorno exportado;
+no leen rc salvo que definas <code>BASH_ENV</code>.
+</p>
+<table>
+<tr><th>Caso típico</th><th>Ficheros leídos</th></tr>
+<tr><td>SSH / consola / <code>su -</code></td><td>profile + bash_profile + bashrc</td></tr>
+<tr><td>Terminal gráfico ya logueado</td><td>solo bashrc</td></tr>
+<tr><td><code>./script.sh</code></td><td>ninguno (hereda export)</td></tr>
+<tr><td><code>su usuario</code> (sin guion)</td><td>mantiene entorno anterior</td></tr>
+</table>
+</section>
+<!-- SECCIÓN 2: laboratorio PS1 + alias -->
+<section>
+<h2>2 · Laboratorio en vivo: PS1 y alias</h2>
+<p><b>Prompt PS1:</b> prueba secuencias <code>\u \h \W \w \$ \t \d</code>.</p>
+<input id="ps1" value="\u@\h:\W\$ " size="24">
+<button onclick="verPS1()">Vista previa</button>
+<button class="sec" onclick="presetPS1(1)">Ejemplo clásico</button>
+<button class="sec" onclick="presetPS1(2)">Con hora y ruta</button>
+<div class="term" id="term">murci@lpic:~$ _</div>
+<hr>
+<p><b>Alias y funciones:</b> el alias abrevia; la función admite parámetros.</p>
+<input id="an" placeholder="ll" size="8"> =
+<input id="av" placeholder="ls -l --color=auto" size="24">
+<button onclick="addAlias()">Añadir alias</button>
+<button class="sec" onclick="addFunc()">Añadir función mkcd</button>
+<button class="sec" onclick="listaAlias=[];pintaAlias()">Limpiar</button>
+<div id="lalias" class="nota"><i>Sin alias. Prueba con ll, gs, ..</i></div>
+<p>Recuerda: <code>alias ll='ls -l'</code> vive en <code>~/.bashrc</code>;
+<code>export PATH=$PATH:~/bin</code> en el perfil login;
+<code>source ~/.bashrc</code> recarga sin salir.
+<code>env</code> lista exportadas, <code>set</code> todas, <code>unset VAR</code> borra.</p>
+</section>
+<!-- SECCIÓN 3: variables -->
+<section>
+<h2>3 · Variables: PATH, EDITOR y Skeleton</h2>
+<p>Escribe una variable y expórtala (simulado):</p>
+<input id="vn" value="EDITOR" size="10"> =
+<input id="vv" value="vim" size="14">
+<button onclick="exporta()">export</button>
+<div class="term" id="vexp">export EDITOR=vim …</div>
+<p>Ficheros modelo para usuarios nuevos en <code>/etc/skel/</code>:
+al crear con <code>useradd -m</code> se copian <code>.bashrc</code>,
+<code>.profile</code> y <code>.bash_logout</code> de serie.</p>
+<p>Orden de personalización recomendado: PATH y locales en perfil;
+alias, prompt y funciones en <code>~/.bashrc</code>.</p>
+</section>
+<!-- SECCIÓN 4: quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 105.1 (5 preguntas)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<button class="sec" onclick="location.reload()">Reiniciar</button>
+<div class="res" id="r"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Sección 1: flujos ----------
+const orden = {
+  login: [
+    "1. /etc/profile (sistema, para todos)",
+    "2. ~/.bash_profile (si existe; si no, ~/.bash_login; si no, ~/.profile)",
+    "3. Normalmente ~/.bash_profile invoca a ~/.bashrc",
+    "4. Al salir: ~/.bash_logout"
+  ],
+  nologin: [
+    "1. /etc/bash.bashrc o /etc/bashrc (según distro)",
+    "2. ~/.bashrc",
+    "3. NO se lee /etc/profile ni ~/.bash_profile"
+  ],
+  script: [
+    "1. Hereda variables exportadas del padre",
+    "2. NO lee perfiles ni rc (salvo $BASH_ENV)",
+    "3. Ideal para automatizar sin entorno interactivo"
+  ],
+  su: [
+    "su usuario → mantiene entorno, lee ~/.bashrc del destino",
+    "su - usuario → login limpio: lee profiles como SSH"
+  ]
+};
+function flujo(m) {
+  let h = "<b>Modo: " + m + "</b><br>";
+  orden[m].forEach(function (p, i) {
+    h += "paso " + (i + 1) + ": " + p + "<br>";
+  });
+  document.getElementById("flujo").innerHTML = h;
+}
+// ---------- Sección 2: PS1 + alias ----------
+function verPS1() {
+  let v = document.getElementById("ps1").value;
+  v = v.replace(/\\u/g, "murci");
+  v = v.replace(/\\h/g, "lpic");
+  v = v.replace(/\\w/g, "~/Documentos");
+  v = v.replace(/\\W/g, "~");
+  v = v.replace(/\\\$/g, "$");
+  v = v.replace(/\\t/g, "10:24:00");
+  v = v.replace(/\\d/g, "dom oct 11");
+  document.getElementById("term").textContent = v + "_  ← así verías tu prompt";
+}
+function presetPS1(n) {
+  let el = document.getElementById("ps1");
+  if (n === 1) { el.value = "[\\u@\\h \\W]\\$ "; }
+  else { el.value = "\\t \\u:\\w\\$ "; }
+  verPS1();
+}
+let listaAlias = [];
+function addAlias() {
+  let n = document.getElementById("an").value.trim();
+  let v = document.getElementById("av").value.trim();
+  if (!n || !v) { alert("Escribe nombre y comando"); return; }
+  listaAlias.push("alias " + n + "='" + v + "'");
+  pintaAlias();
+}
+function addFunc() {
+  listaAlias.push("mkcd() { mkdir -p \"$1\" && cd \"$1\"; }");
+  pintaAlias();
+}
+function pintaAlias() {
+  let d = document.getElementById("lalias");
+  if (!listaAlias.length) { d.innerHTML = "<i>Sin alias.</i>"; return; }
+  d.innerHTML = listaAlias.map(function (a) {
+    return "<code>" + a + "</code>";
+  }).join("<br>");
+}
+// ---------- Sección 3: export ----------
+function exporta() {
+  let n = document.getElementById("vn").value.trim() || "EDITOR";
+  let v = document.getElementById("vv").value.trim() || "vim";
+  document.getElementById("vexp").textContent =
+    "export " + n + "=" + v + "  ✔ visible con: env | grep " + n;
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Qué fichero lee primero una bash login?", o: ["~/.bashrc", "/etc/profile", "~/.bash_logout"], c: 1,
+    e: "/etc/profile es el perfil global; luego el personal." },
+  { q: "¿Dónde deben ir los alias persistentes interactivos?", o: ["/etc/passwd", "~/.bashrc", "/etc/shadow"], c: 1,
+    e: "~/.bashrc se lee en cada shell interactiva no-login." },
+  { q: "¿Qué hace export PATH=$PATH:~/bin?", o: ["Crea un alias", "Marca la variable para los procesos hijos", "Cambia el prompt"], c: 1,
+    e: "export publica la variable al entorno de los hijos." },
+  { q: "Secuencia PS1 que muestra usuario y directorio base:", o: ["\\d \\t", "\\u \\W", "\\h sola"], c: 1,
+    e: "\\u=user, \\W=basename del cwd." },
+  { q: "¿Cómo recargas ~/.bashrc sin cerrar sesión?", o: ["reboot", "source ~/.bashrc", "logout"], c: 1,
+    e: "source (o .) ejecuta el fichero en la shell actual." }
+];
+let html = "";
+preg.forEach(function (p, i) {
+  html += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    html += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = html;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Listo para el examen!" : n >= 3 ? "Bien, repasa el flujo login" : "Repite las secciones 1 y 2");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+verPS1();
+</script>
+</body>
+</html>

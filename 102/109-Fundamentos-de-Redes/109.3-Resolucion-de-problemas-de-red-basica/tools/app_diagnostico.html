@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>109.3 Diagnóstico de red · LPIC-1 v5.0</title>
+<style>
+:root{--azul:#002855;--amar:#FDB913;--bg:#f4f6fa;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#1c2733}
+header{background:var(--azul);color:#fff;padding:18px;border-bottom:6px solid var(--amar)}
+header h1{margin:0;font-size:1.25rem}.badge{display:inline-block;background:var(--amar);color:var(--azul);font-weight:700;border-radius:20px;padding:2px 12px;margin-top:8px;font-size:.85rem}
+main{max-width:960px;margin:0 auto;padding:16px}
+section{background:var(--card);border-radius:10px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(0,40,85,.12)}
+h2{color:var(--azul);border-left:6px solid var(--amar);padding-left:10px;font-size:1.1rem}
+ol.flujo{list-style:none;padding:0;counter-reset:p}ol.flujo li{border:2px solid var(--azul);border-radius:8px;padding:10px;margin:8px 0;cursor:pointer}
+ol.flujo li.act{background:var(--azul);color:#fff}ol.flujo li.act code{background:var(--amar);color:var(--azul)}
+code{background:#0d1b2e;color:#ffd75e;padding:2px 6px;border-radius:5px;font-size:.85rem}
+.det{background:#eef3fa;border:1px solid #b9c8e2;border-radius:8px;padding:12px;margin-top:8px;font-size:.92rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:10px}
+th{background:var(--azul);color:#fff;padding:8px}td{border:1px solid #c6d2e4;padding:8px}
+tr:nth-child(even) td{background:#f2f6fc}
+button{cursor:pointer;border:2px solid var(--azul);background:#fff;color:var(--azul);border-radius:8px;padding:8px 14px;font-weight:700}
+button:hover{background:var(--azul);color:var(--amar)}
+.q{border:1px solid #c6d2e4;border-radius:8px;padding:10px;margin:8px 0}.q p{font-weight:700;margin:0 0 6px}
+label{display:block;margin:4px 0;font-size:.92rem}#nota{font-weight:800;color:var(--azul)}
+footer{text-align:center;font-size:.82rem;color:#555;padding:16px}
+</style>
+</head>
+<body>
+<header>
+<h1>109.3 Resolución de problemas de red básica</h1>
+<p>Objetivo 109.3 · Lección: flujo ip → ss → ping → traceroute → netcat · <strong>Peso v5.0: 4</strong></p>
+<span class="badge">ip · ss · ping · traceroute · nc · iproute2</span>
+</header>
+<main>
+<section>
+<h2>1 · Flujo de diagnóstico (pulsa cada paso)</h2>
+<ol class="flujo" id="flujo">
+<li class="act" onclick="paso(0,this)"><b>1. ¿Tengo IP?</b> <code>ip -brief addr</code> — sin IP no hay nada que depurar.</li>
+<li onclick="paso(1,this)"><b>2. ¿Ruta por defecto?</b> <code>ip route</code> — busca la línea <code>default via …</code>.</li>
+<li onclick="paso(2,this)"><b>3. ¿Escucha el servicio?</b> <code>ss -tlnp</code> — comprueba puerto y proceso.</li>
+<li onclick="paso(3,this)"><b>4. ¿Llego al destino?</b> <code>ping -c3 8.8.8.8</code> y <code>traceroute ejemplo.es</code>.</li>
+<li onclick="paso(4,this)"><b>5. ¿Responde el puerto?</b> <code>nc -vz destino puerto</code> — prueba TCP rápida.</li>
+</ol>
+<div class="det" id="det"></div>
+</section>
+<section>
+<h2>2 · net-tools (legacy) vs iproute2 (actual)</h2>
+<p>En el examen cae: lo viejo está obsoleto, usa <code>ip</code> y <code>ss</code>.</p>
+<p style="font-size:.88rem">
+<b>Memoria rápida:</b> si ves <code>ifconfig</code>, <code>route</code>
+o <code>netstat</code> en una opción de test, sospecha:
+suelen ser la respuesta incorrecta salvo que pregunten por legacy.
+</p>
+<p style="font-size:.88rem">
+Excepción: <code>arp -a</code> aún aparece en sistemas viejos,
+pero en Linux actual toca <code>ip neigh</code>.
+</p>
+<table>
+<tr><th>Antiguo (no usar)</th><th>Moderno (usa esto)</th><th>Ejemplo</th></tr>
+<tr><td><code>ifconfig</code></td><td><code>ip addr</code></td><td><code>ip -brief addr show</code></td></tr>
+<tr><td><code>route</code></td><td><code>ip route</code></td><td><code>ip route show default</code></td></tr>
+<tr><td><code>netstat -tulpn</code></td><td><code>ss -tulpn</code></td><td><code>ss -tlnp | grep :22</code></td></tr>
+<tr><td><code>arp</code></td><td><code>ip neigh</code></td><td><code>ip neigh show</code></td></tr>
+<tr><td><code>hostname -i</code> suelto</td><td><code>getent hosts</code></td><td><code>getent hosts ejemplo.es</code></td></tr>
+</table>
+</section>
+<section>
+<h2>3 · Interpreta salidas reales</h2>
+<p>
+Despliega cada caso, lee la salida y deduce el fallo como en el examen.
+</p>
+<details open>
+<summary><b>Caso A · ¿Hay IP? — <code>ip -brief addr</code></b></summary>
+<p>
+<code>lo UP 127.0.0.1/8</code>
+</p>
+<p>
+<code>enp0s3 DOWN (sin IP)</code>
+</p>
+<p>
+Diagnóstico: la interfaz está caída, no es fallo de DNS ni de ruta.
+</p>
+<p>
+Acción: <code>nmcli dev status</code> y <code>nmcli con up "casa"</code>.
+</p>
+<p>
+Revisa cable o Wi-Fi antes de mirar nada más.
+</p>
+</details>
+<details>
+<summary><b>Caso B · ¿Hay ruta? — <code>ip route</code></b></summary>
+<p>
+<code>192.168.1.0/24 dev enp0s3 scope link</code>
+</p>
+<p>
+<code>(no hay línea default)</code>
+</p>
+<p>
+Diagnóstico: hay red local pero falta puerta de enlace.
+</p>
+<p>
+Llegas al vecino, no a internet.
+</p>
+<p>
+Acción: fijar gateway en nmcli o <code>ip route add default via 192.168.1.1</code>.
+</p>
+</details>
+<details>
+<summary><b>Caso C · ¿Escucha? — <code>ss -tlnp</code></b></summary>
+<p>
+<code>LISTEN 0.0.0.0:22 (sshd)</code>
+</p>
+<p>
+<code>(nada en el puerto 80)</code>
+</p>
+<p>
+Diagnóstico: SSH funciona, pero no hay servidor web escuchando.
+</p>
+<p>
+Si esperabas una web, el demonio está parado o mal configurado.
+</p>
+<p>
+Acción: <code>systemctl status apache2</code> (o nginx) y firewall.
+</p>
+</details>
+<details>
+<summary><b>Caso D · ¿DNS o red? — ping doble</b></summary>
+<p>
+<code>ping -c2 8.8.8.8 → 0% pérdida</code>
+</p>
+<p>
+<code>ping -c2 ejemplo.es → fallo temporal de resolución</code>
+</p>
+<p>
+Diagnóstico: la red va, lo roto es la resolución de nombres.
+</p>
+<p>
+Acción: <code>cat /etc/resolv.conf</code> y <code>grep hosts /etc/nsswitch.conf</code>.
+</p>
+<p>
+Regla de oro: IP responde + nombre no = culpa del DNS.
+</p>
+</details>
+<details>
+<summary><b>Caso E · ¿Puerto abierto? — <code>nc -vz</code></b></summary>
+<p>
+<code>nc -vz 192.168.1.10 22 → succeeded</code>
+</p>
+<p>
+<code>nc -vz 192.168.1.10 80 → connection refused</code>
+</p>
+<p>
+Diagnóstico: el equipo está vivo; el puerto 80 cerrado o filtrado.
+</p>
+<p>
+Acción: servicio, <code>ss -tlnp</code> en el servidor y reglas del cortafuegos.
+</p>
+</details>
+</section>
+<section>
+<h2>4 · Quiz · 5 preguntas</h2>
+<div class="q"><p>1. Sustituto moderno de <code>ifconfig</code>:</p>
+<label><input type="radio" name="q1" value="1"> ip addr</label>
+<label><input type="radio" name="q1" value="0"> iwconfig siempre</label>
+<label><input type="radio" name="q1" value="0"> netstat</label></div>
+<div class="q"><p>2. Ver puertos TCP en escucha con proceso:</p>
+<label><input type="radio" name="q2" value="1"> ss -tlnp</label>
+<label><input type="radio" name="q2" value="0"> ping -a</label>
+<label><input type="radio" name="q2" value="0"> traceroute -p</label></div>
+<div class="q"><p>3. Sin línea «default via…» en <code>ip route</code> significa…</p>
+<label><input type="radio" name="q3" value="1"> No hay puerta de enlace: no sale a otras redes</label>
+<label><input type="radio" name="q3" value="0"> Todo funciona perfecto</label>
+<label><input type="radio" name="q3" value="0"> El DNS está caído seguro</label></div>
+<div class="q"><p>4. <code>traceroute</code> muestra…</p>
+<label><input type="radio" name="q4" value="1"> Los saltos (routers) hasta el destino y dónde se corta</label>
+<label><input type="radio" name="q4" value="0"> La contraseña wifi</label>
+<label><input type="radio" name="q4" value="0"> Los trabajos CUPS</label></div>
+<div class="q"><p>5. Probar si el puerto 80 de un servidor responde:</p>
+<label><input type="radio" name="q5" value="1"> nc -vz servidor 80</label>
+<label><input type="radio" name="q5" value="0"> lp -d servidor 80</label>
+<label><input type="radio" name="q5" value="0"> arp -vz servidor 80</label></div>
+<button onclick="corregir()">Corregir quiz</button>
+<p id="nota"></p><div id="fallos"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const P=[
+"<b>Paso 1 · IP local.</b> <code>ip -brief addr</code> debe mostrar tu interfaz UP con IP. Si no: revisa cable, <code>nmcli dev status</code> y <code>nmcli con up …</code>. Sin IP, ping y DNS fallarán siempre.",
+"<b>Paso 2 · Ruta.</b> <code>ip route</code>: necesitas <code>default via 192.168.1.1 dev enp0s3</code>. Si falta, añade con <code>ip route add default via …</code> o corrige la conexión nmcli.",
+"<b>Paso 3 · Servicio.</b> <code>ss -tlnp</code>: LISTEN en el puerto esperado (22 SSH, 80 HTTP…). Si no escucha, el demonio está parado: <code>systemctl status sshd</code>. Revisa firewall.",
+"<b>Paso 4 · Alcance.</b> <code>ping -c3 8.8.8.8</code> prueba IP; <code>ping -c3 ejemplo.es</code> prueba DNS. <code>traceroute</code> / <code>tracepath</code> localiza el salto donde se pierde.",
+"<b>Paso 5 · Puerto.</b> <code>nc -vz destino puerto</code> ('succeeded' = abierto). Alternativa: <code>nmap -p80 destino</code>. Si ping va pero nc falla: firewall o servicio caído."];
+function paso(i,el){document.querySelectorAll('#flujo li').forEach(x=>x.classList.remove('act'));el.classList.add('act');
+document.getElementById('det').innerHTML=P[i];}
+paso(0,document.querySelector('#flujo li'));
+function corregir(){let n=0,f=[];for(let i=1;i<=5;i++){const s=document.querySelector('input[name=q'+i+']:checked');
+if(s&&s.value==="1")n++;else f.push(i);}
+document.getElementById('nota').textContent="Nota: "+n+" / 5"+(n===5?" ¡Red depurada!":"");
+document.getElementById('fallos').innerHTML=f.length?"Revisa: "+f.join(", "):"Sin fallos.";}
+</script>
+</body>
+</html>

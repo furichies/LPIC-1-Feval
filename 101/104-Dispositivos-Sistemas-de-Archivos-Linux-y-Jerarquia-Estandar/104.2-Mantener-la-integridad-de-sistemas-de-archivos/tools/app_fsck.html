@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>104.2 Integridad FS · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px 4px 4px 0
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+select {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem;
+  width:100%;
+  margin:4px 0
+}
+
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:110px;
+  white-space:pre-wrap
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px
+}
+
+.card {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px
+}
+
+code {
+  background:#e8edf5;
+  padding:1px 6px;
+  border-radius:6px
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 104.2 Integridad de sistemas de archivos</h1>
+<div><span class="badge">Objetivo 104.2</span><span class="badge">Peso 2</span><span class="badge">Examen 101-500</span></div>
+<p style="margin:8px 0 0">du vs df · fsck desmontado · tune2fs · xfs_repair · Material didáctico propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · du vs df y tune2fs</h2>
+<p><b>df</b> pregunta al sistema (espacio libre por partición, con <b>-h -i</b> para inodos). <b>du</b> suma el tamaño de directorios (<b>-sh *</b>). Si difieren: fichero borrado aún abierto.</p>
+<div class="grid">
+<div class="card"><b>Comparador df/du</b>
+<button onclick="disk('df')">df -h</button><button onclick="disk('du')">du -sh /*</button><button onclick="disk('ino')">df -i</button><pre id="o1">$ _</pre></div>
+<div class="card"><b>tune2fs -l (ext2/3/4)</b>
+<button onclick="tune()">tune2fs -l /dev/sda1</button>
+<button onclick="tune2()">tune2fs -c 30 -i 6m</button><pre id="o2">$ _</pre></div>
+</div>
+<div class="expl"><b>dumpe2fs -h</b> equivale a tune2fs -l. <b>-c</b> nº de montajes y <b>-i</b> intervalo entre chequeos. <b>debugfs / dumpe2fs</b> inspeccionan superbloque.</div>
+</section>
+<section>
+<h2>2 · Simulador de diagnóstico</h2>
+<p>Elige un síntoma: la app propone el flujo correcto. Regla de oro: <b>fsck solo con el FS desmontado o en solo-lectura</b>; XFS usa sus propias herramientas.</p>
+<select id="sym"><option value="dirty">Apagón: ext4 marcado dirty</option><option value="full">Disco al 100% según df</option><option value="xfs">XFS no monta, error de log</option><option value="inode">df -i al 100% con espacio libre</option></select>
+<button onclick="diag()">Diagnosticar</button>
+<button onclick="demo('fsck')">fsck -y demo</button>
+<button class="sec" onclick="demo('xfs')">xfs_repair demo</button>
+<pre id="o3">$ Elige un síntoma y pulsa Diagnosticar…</pre>
+<div class="expl" id="e2"><b>e2fsck -p/-y</b> repara ext; <b>-f</b> fuerza chequeo. <b>xfs_repair -n</b> simula sin tocar; requiere desmontado. <b>xfs_fsr</b> desfragmenta en caliente, <b>xfs_db</b> depura.</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+function disk(k){const p=document.getElementById('o1');
+if(k==='df')p.textContent='$ df -h\n/dev/sda1  20G  16G  3,2G 84% /\ntmpfs      2G    0   2G  0% /dev/shm ← por sistema de archivos';
+if(k==='du')p.textContent='$ du -sh /*\n1,2G /var\n8,9G /home\n45M  /etc ← suma por directorio (lento en árboles grandes)';
+if(k==='ino')p.textContent='$ df -i\n/dev/sda1  1,3M  1,3M  0 100% / ← ¡inodos agotados! Millones de ficheros pequeños.';}
+function tune(){document.getElementById('o2').textContent='$ tune2fs -l /dev/sda1\nFilesystem state: clean\nMount count: 12\nMaximum mount count: 30\nCheck interval: 15552000 (6 months)\n→ próximo chequeo al llegar a 30 montajes o 6 meses';}
+function tune2(){document.getElementById('o2').textContent='$ tune2fs -c 30 -i 6m /dev/sda1\najusta chequeo cada 30 montajes o 6 meses ← planifica fsck periódico';}
+function diag(){const s=document.getElementById('sym').value,p=document.getElementById('o3'),e=document.getElementById('e2');
+if(s==='dirty'){p.textContent='$ mount -o remount,ro /  &&  fsck -y /dev/sda1\nPass 1: inodos… FIXED\n→ repara desmontado; -y responde sí a todo';e.innerHTML='ext4 sucio: desmonta (o <b>remount,ro</b> para /) y <b>fsck -y</b>. Nunca sobre FS montado en escritura.';}
+if(s==='full'){p.textContent='$ df -h (84%…100%) → du -sh /* | sort -rh | head\n/var/log 9G ← rota con logrotate; luego find -size +500M';e.innerHTML='<b>df</b> localiza la partición llena; <b>du</b> el directorio culpable. No borres sin identificar.';}
+if(s==='xfs'){p.textContent='$ umount /datos  &&  xfs_repair -n /dev/sdb1  (simula)\n$ xfs_repair /dev/sdb1 ← repara de verdad';e.innerHTML='<b>fsck no vale para XFS</b>: usa <b>xfs_repair</b> (desmontado). <b>-n</b> modo prueba.';}
+if(s==='inode'){p.textContent='$ df -i 100% pero df -h 40%\n$ find /var/spool -type f | wc -l\n2M ficheros → borra sesiones/caches viejas';e.innerHTML='Sin inodos no se crea nada aunque haya GB libres. Vigila con <b>df -i</b>.';}}
+function demo(t){const p=document.getElementById('o3');
+if(t==='fsck')p.textContent='$ fsck -y /dev/sda1  (desmontado)\n[OK] superbloque · inodos · bloques · tamaños ← -p repara lo seguro, -y todo';
+if(t==='xfs')p.textContent='$ xfs_repair /dev/sdb1\nPhase 1-7: log, inodos, directorios… done\n[xfs_fsr desfragmenta online; xfs_db examina]';}
+const P=[
+
+{q:"df frente a du:",o:["df suma dirs, du mira particiones","df espacio por FS montado; du suma por directorio","Son el mismo"],c:1},
+
+{q:"Antes de fsck en ext4 debes…",o:["Montarlo en escritura","Desmontarlo o pasarlo a solo-lectura","Formatearlo"],c:1},
+
+{q:"Ver parámetros ext (nº montajes, intervalo):",o:["xfs_db","tune2fs -l","du -sh"],c:1},
+
+{q:"Reparar un XFS:",o:["fsck -y","xfs_repair desmontado","mke2fs"],c:1},
+
+{q:"df -i al 100% con espacio libre significa…",o:["Disco roto","Inodos agotados (demasiados ficheros)","RAM llena"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡FS blindado!':n>=3?'Bien, repasa fsck/xfs.':'Relee secciones 1-2.');}
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>110.1 Auditoría de seguridad · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px 4px 4px 0
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+select,input {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem;
+  width:100%;
+  margin:4px 0
+}
+
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:110px;
+  white-space:pre-wrap
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px
+}
+
+.card {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px
+}
+
+code {
+  background:#e8edf5;
+  padding:1px 6px;
+  border-radius:6px
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 110.1 Administración de seguridad</h1>
+<div><span class="badge">Objetivo 110.1</span><span class="badge">Peso 3</span><span class="badge">Examen 102-500</span></div>
+<p style="margin:8px 0 0">SUID · chage · nmap/ss · ulimit · who/w/last · sudoers · Material propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Checklist de auditoría</h2>
+<p>Marca cada control superado. La barra mide tu nivel de endurecimiento.</p>
+<div id="ck">
+<label><input type="checkbox" style="width:auto" onchange="barra()"> Sin SUID raros (<code>find / -perm -4000</code> revisado)</label><br>
+<label><input type="checkbox" style="width:auto" onchange="barra()"> Caducidad con <code>chage -M 90 user</code></label><br>
+<label><input type="checkbox" style="width:auto" onchange="barra()"> Puertos auditados (<code>ss -tlnp</code> / nmap)</label><br>
+<label><input type="checkbox" style="width:auto" onchange="barra()"> Límites <code>ulimit -Hn</code> y <code>/etc/security/limits.conf</code></label><br>
+<label><input type="checkbox" style="width:auto" onchange="barra()"> <code>sudoers</code> solo vía <code>visudo</code></label>
+</div>
+<p><b>Nivel: <span id="pct">0%</span></b></p>
+<div style="background:#dde4ef;border-radius:10px;height:16px"><div id="bar" style="height:16px;width:0%;background:var(--am);border-radius:10px"></div></div>
+<div class="grid" style="margin-top:10px">
+<div class="card"><b>SUID/SGID</b><br><button onclick="aud('suid')">find -perm -4000</button><pre id="o1">$ _</pre></div>
+<div class="card"><b>Contraseñas</b><br><button onclick="aud('chage')">chage -l ana</button><button onclick="aud('pw')">passwd -S</button><pre id="o2">$ _</pre></div>
+</div>
+<div class="expl">SUID (<b>4000</b>) ejecuta como dueño; SGID (<b>2000</b>) como grupo. Busca también <b>-perm -2000</b>. <b>chage -E</b> fecha de caducidad, <b>-M</b> días máximos, <b>-W</b> aviso.</div>
+</section>
+<section>
+<h2>2 · Red, límites y sesiones</h2>
+<div class="grid">
+<div class="card"><b>Puertos: ss vs nmap</b>
+<button onclick="net('ss')">ss -tlnp</button><button onclick="net('nmap')">nmap localhost</button><pre id="o3">$ _</pre></div>
+<div class="card"><b>ulimit + who/w/last/sudo</b>
+<button onclick="net('ulim')">ulimit -a</button><button onclick="net('who')">who / w / last</button><button onclick="net('sudo')">visudo</button><pre id="o4">$ _</pre></div>
+</div>
+<div class="expl"><b>ss -tlnp</b> ve escucha local (sin red); <b>nmap</b> escanea como atacante. <b>fuser/lsof -i</b> dicen qué proceso usa un puerto. <b>su -</b> cambia de usuario; <b>sudo -i/-s</b> con tus reglas; <b>usermod -aG wheel</b> delega.</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+function barra(){const c=document.querySelectorAll('#ck input:checked').length,p=c*20;
+document.getElementById('pct').textContent=p+'%';document.getElementById('bar').style.width=p+'%';}
+function aud(k){if(k==='suid')document.getElementById('o1').textContent='$ find / -perm -4000 -ls 2>/dev/null\n-rwsr-xr-x root /usr/bin/sudo\n-rwsr-xr-x root /usr/bin/passwd\n-rwsr-xr-x root /tmp/mal ← ¡sospechoso en /tmp! Investiga';
+if(k==='chage')document.getElementById('o2').textContent='$ chage -l ana\nMaximum: 90  Warning: 7  Account expires: 2026-12-31 ← política sana';
+if(k==='pw')document.getElementById('o2').textContent='$ passwd -S ana / chage -l\nana P 01/01/2026 0 90 7 -1 ← P=con contraseña; L=bloqueada (usermod -L)';}
+function net(k){const a=document.getElementById('o3'),b=document.getElementById('o4');
+if(k==='ss')a.textContent='$ ss -tlnp\n:22 sshd  :80 nginx  :3306 mysqld ← -t tcp -l listen -n numérico -p proceso';
+if(k==='nmap')a.textContent='$ nmap -sT localhost\n22/tcp open ssh\n80/tcp open http ← -sU UDP, -O SO. ¡Pide permiso antes de escanear red ajena!';
+if(k==='ulim')b.textContent='$ ulimit -Hn -Sn\n4096 1024 ← -H duro, -S blando; -n ficheros, -u procesos, -f tamaño. Persistente en limits.conf';
+if(k==='who')b.textContent='$ who → quién logueado\n$ w → y qué hace\n$ last → histórico (+ /var/log/wtmp). lastb = fallidos (btmp)';
+if(k==='sudo')b.textContent='$ visudo  ← edita /etc/sudoers con control de sintaxis\nana ALL=(ALL) /usr/bin/apt ← privilegio mínimo, nunca ALL sin necesidad';}
+const P=[
+
+{q:"Auditar binarios SUID:",o:["find / -perm -4000","chmod 777 /","ls /tmp"],c:0},
+
+{q:"Forzar rotación cada 90 días:",o:["chage -M 90 user","passwd -d user","usermod -L user"],c:0},
+
+{q:"Ver puertos en escucha local:",o:["nmap --help","ss -tlnp","last"],c:1},
+
+{q:"Límite de ficheros abiertos:",o:["ulimit -n","who -a","w"],c:0},
+
+{q:"Editar sudoers de forma segura:",o:["echo >> /etc/sudoers","visudo","vi directo sin copia"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Auditor aprobado!':n>=3?'Bien, repasa chage/ss.':'Relee secciones 1-2.');}
+</script>
+</body>
+</html>

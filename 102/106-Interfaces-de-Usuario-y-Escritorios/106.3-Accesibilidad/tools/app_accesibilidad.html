@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>106.3 Accesibilidad · LPIC-1 v5.0</title>
+<style>
+:root{--azul:#002855;--amar:#FDB913;--bg:#f4f6fa;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#1c2733}
+header{background:var(--azul);color:#fff;padding:18px;border-bottom:6px solid var(--amar)}
+header h1{margin:0;font-size:1.25rem}.badge{display:inline-block;background:var(--amar);color:var(--azul);font-weight:700;border-radius:20px;padding:2px 12px;margin-top:8px;font-size:.85rem}
+main{max-width:960px;margin:0 auto;padding:16px}
+section{background:var(--card);border-radius:10px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(0,40,85,.12)}
+h2{color:var(--azul);border-left:6px solid var(--amar);padding-left:10px;font-size:1.1rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.tarjeta{border:2px solid var(--azul);border-radius:10px;padding:10px;cursor:pointer;background:#fff}
+.tarjeta.act{background:var(--azul);color:#fff}.tarjeta.act small{color:var(--amar)}
+small{color:#445}.detalle{background:#eef3fa;border:1px solid #b9c8e2;border-radius:8px;padding:12px;margin-top:10px;min-height:110px}
+code{background:#0d1b2e;color:#ffd75e;padding:2px 6px;border-radius:5px;font-size:.85rem}
+.sim{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sim div{flex:1;min-width:200px;background:#10233f;color:#fff;border-radius:8px;padding:12px}
+button{cursor:pointer;border:2px solid var(--azul);background:#fff;color:var(--azul);border-radius:8px;padding:8px 14px;font-weight:700}
+button:hover{background:var(--azul);color:var(--amar)}
+.q{border:1px solid #c6d2e4;border-radius:8px;padding:10px;margin:8px 0}.q p{font-weight:700;margin:0 0 6px}
+label{display:block;margin:4px 0;font-size:.92rem}#nota{font-weight:800;color:var(--azul)}
+footer{text-align:center;font-size:.82rem;color:#555;padding:16px}
+.grande{font-size:1.5rem!important}.alto{line-height:2.2!important}
+</style>
+</head>
+<body>
+<header>
+<h1>106.3 Accesibilidad en Linux</h1>
+<p>Objetivo 106.3 · Lección: tecnologías de apoyo en el escritorio · <strong>Peso v5.0: 1</strong></p>
+<span class="badge">Lector · Braille · Lupa · Teclado · Voz · Gestos</span>
+</header>
+<main>
+<section>
+<h2>1 · Catálogo: pulsa cada ficha</h2>
+<div class="grid" id="grid">
+<div class="tarjeta act" onclick="ficha(0,this)"><b>🔊 Lector de pantalla</b><br><small>Orca · voz del escritorio</small></div>
+<div class="tarjeta" onclick="ficha(1,this)"><b>⠿ Línea Braille</b><br><small>BRLTTY · tacto</small></div>
+<div class="tarjeta" onclick="ficha(2,this)"><b>🔍 Lupa / zoom</b><br><small>GNOME Magnifier</small></div>
+<div class="tarjeta" onclick="ficha(3,this)"><b>⌨️ Sticky / Slow keys</b><br><small>Teclas persistentes</small></div>
+<div class="tarjeta" onclick="ficha(4,this)"><b>🎙️ Control por voz</b><br><small>Dictado y comandos</small></div>
+<div class="tarjeta" onclick="ficha(5,this)"><b>👆 Gestos y teclado en pantalla</b><br><small>Onboard, Dasher</small></div>
+</div>
+<div class="detalle" id="det"></div>
+</section>
+<section>
+<h2>2 · Simulador de ajustes</h2>
+<p>Activa opciones y ve el efecto inmediato (como harías en el centro de Accesibilidad de GNOME/KDE).</p>
+<div class="sim">
+<div id="cajaSim">Texto de ejemplo: El software libre es de todas. Ajusta el tamaño, el contraste y el retardo de repetición.</div>
+<div>
+<label><input type="checkbox" id="cZoom" onchange="sim()"> Texto grande</label>
+<label><input type="checkbox" id="cContra" onchange="sim()"> Alto contraste</label>
+<label><input type="checkbox" id="cEsp" onchange="sim()"> Espaciado amplio</label>
+<button onclick="voz()">🔊 Leer con voz (SpeechSynthesis)</button>
+<p style="font-size:.85rem">Comando real: <code>orca --replace &</code> · demonio Braille: <code>brltty</code></p>
+</div>
+</div>
+</section>
+<section>
+<h2>3 · Atajos y ajustes rápidos</h2>
+<p>
+Despliega cada bloque: son los atajos y rutas que más caen en test.
+</p>
+<details open>
+<summary><b>Lector Orca: lanzar y controlar</b></summary>
+<p>
+Lanzar: <code>orca</code> o <code>orca --replace &amp;</code>.
+</p>
+<p>
+Atajo GNOME típico: <code>Alt + Super + S</code> (activa el lector).
+</p>
+<p>
+Tecla Orca por defecto: <code>Insert</code> (portátil: <code>Bloq Mayús</code>).
+</p>
+<p>
+<code>Insert + Espacio</code> abre las preferencias de Orca.
+</p>
+<p>
+Sin Orca no hay voz del escritorio ni salida a línea Braille.
+</p>
+</details>
+<details>
+<summary><b>Lupa y zoom del escritorio</b></summary>
+<p>
+Activar zoom en GNOME: <code>Alt + Super + 8</code>.
+</p>
+<p>
+Acercar / alejar: <code>Alt + Super + +</code> y <code>Alt + Super + -</code>.
+</p>
+<p>
+La lupa puede seguir al puntero, al foco o al cursor de texto.
+</p>
+<p>
+También existe alto contraste: <code>Ajustes → Accesibilidad → Contraste alto</code>.
+</p>
+<p>
+El texto grande escala toda la interfaz sin tocar la resolución.
+</p>
+</details>
+<details>
+<summary><b>Teclado: sticky, slow y bounce</b></summary>
+<p>
+<b>Sticky keys</b>: los modificadores quedan pegados.
+</p>
+<p>
+Ejemplo: pulsar <code>Ctrl</code>, soltar, luego <code>C</code> = copiar.
+</p>
+<p>
+<b>Slow keys</b>: hay que mantener la tecla un instante.
+</p>
+<p>
+Evita pulsaciones involuntarias por temblor o prisa.
+</p>
+<p>
+<b>Bounce keys</b>: ignora repeticiones rápidas de la misma tecla.
+</p>
+<p>
+Las tres están en <code>Ajustes → Accesibilidad → Escritura</code>.
+</p>
+</details>
+<details>
+<summary><b>Puntero y clic alternativo</b></summary>
+<p>
+<b>Dwell click</b>: clic automático al dejar quieto el puntero.
+</p>
+<p>
+<b>Teclas de ratón</b>: el teclado numérico mueve el puntero.
+</p>
+<p>
+<b>Localizar puntero</b>: animación con <code>Ctrl</code> al perderlo de vista.
+</p>
+<p>
+<b>Clic secundario simulado</b>: mantener el clic izquierdo.
+</p>
+<p>
+Imprescindibles cuando no se puede usar un ratón clásico.
+</p>
+</details>
+<details>
+<summary><b>Teclado en pantalla y dictado</b></summary>
+<p>
+<b>Onboard</b>: teclado virtual completo en GNOME/Xfce.
+</p>
+<p>
+<b>Dasher</b>: escritura por gestos continuos del puntero.
+</p>
+<p>
+El control por voz permite dictar y dar órdenes habladas.
+</p>
+<p>
+Se combinan con el lector para una sesión 100 % sin teclado físico.
+</p>
+</details>
+</section>
+<section>
+<h2>4 · Quiz · 5 preguntas</h2>
+<div class="q"><p>1. Lector de pantalla libre más usado en GNOME:</p>
+<label><input type="radio" name="q1" value="1"> Orca</label>
+<label><input type="radio" name="q1" value="0"> Narrator</label>
+<label><input type="radio" name="q1" value="0"> TalkBack</label></div>
+<div class="q"><p>2. Servicio que da soporte a líneas Braille en consola y X:</p>
+<label><input type="radio" name="q2" value="0"> lupad</label>
+<label><input type="radio" name="q2" value="1"> brltty</label>
+<label><input type="radio" name="q2" value="0"> gdm</label></div>
+<div class="q"><p>3. Sticky keys sirve para…</p>
+<label><input type="radio" name="q3" value="1"> Pulsar modificadores (Ctrl/Alt/Shift) por secuencia, sin mantenerlos</label>
+<label><input type="radio" name="q3" value="0"> Acelerar la repetición del teclado</label>
+<label><input type="radio" name="q3" value="0"> Desactivar el teclado</label></div>
+<div class="q"><p>4. Slow keys / teclas lentas:</p>
+<label><input type="radio" name="q4" value="1"> Exige mantener la tecla un tiempo para aceptarla</label>
+<label><input type="radio" name="q4" value="0"> Repite la tecla más rápido</label>
+<label><input type="radio" name="q4" value="0"> Es un lector de pantalla</label></div>
+<div class="q"><p>5. ¿Dónde se activan estas ayudas en GNOME?</p>
+<label><input type="radio" name="q5" value="0"> Solo editando /etc/passwd</label>
+<label><input type="radio" name="q5" value="1"> Ajustes → Accesibilidad (y con atajos como Alt+Super+S)</label>
+<label><input type="radio" name="q5" value="0"> Solo recompilando el kernel</label></div>
+<button onclick="corregir()">Corregir quiz</button>
+<p id="nota"></p><div id="fallos"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const F=[
+"<b>Lector de pantalla Orca.</b> Lee menús, ventanas y web con voz y braille. Se lanza con <code>orca</code>. Imprescindible para ceguera total. Combina con Firefox accesible.",
+"<b>Línea Braille (BRLTTY).</b> Muestra en relieve la línea del cursor/lector. Funciona en consola y en gráfico con Orca. Demonio: <code>brltty</code>, config en <code>/etc/brltty.conf</code>.",
+"<b>Lupa / Magnifier.</b> Amplía zona del puntero o pantalla completa, con seguimiento de foco y cursor. Atajo típico: <code>Alt+Super+8</code> para zoom en GNOME.",
+"<b>Sticky keys y Slow keys.</b> Sticky: Ctrl/Alt/Shift quedan 'pegados' para combinaciones con una mano. Slow: filtra pulsaciones breves (temblor). Bounce keys ignora rebotes.",
+"<b>Control por voz.</b> Dictado y órdenes habladas para quien no puede usar manos/teclado. En Linux hay motores libres y funciones en GNOME/KDE.",
+"<b>Gestos y teclado en pantalla.</b> Onboard, panorámica con gestos táctiles, dwell-click (clic por permanencia) y Dasher. Clave para movilidad reducida."];
+function ficha(i,el){document.querySelectorAll('.tarjeta').forEach(t=>t.classList.remove('act'));el.classList.add('act');
+document.getElementById('det').innerHTML=F[i];}
+ficha(0,document.querySelector('.tarjeta'));
+function sim(){const c=document.getElementById('cajaSim');
+c.classList.toggle('grande',document.getElementById('cZoom').checked);
+c.classList.toggle('alto',document.getElementById('cEsp').checked);
+const hc=document.getElementById('cContra').checked;
+c.style.background=hc?'#000':'#10233f';c.style.color=hc?'#FDB913':'#fff';}
+function voz(){const t=document.getElementById('cajaSim').textContent;
+try{speechSynthesis.cancel();speechSynthesis.speak(new SpeechSynthesisUtterance(t));}catch(e){alert('Voz no disponible en este navegador.');}}
+function corregir(){let n=0,f=[];for(let i=1;i<=5;i++){const s=document.querySelector('input[name=q'+i+']:checked');
+if(s&&s.value==="1")n++;else f.push(i);}
+document.getElementById('nota').textContent="Nota: "+n+" / 5"+(n===5?" ¡Inclusivo y libre!":"");
+document.getElementById('fallos').innerHTML=f.length?"Revisa: "+f.join(", "):"Sin fallos.";}
+</script>
+</body>
+</html>

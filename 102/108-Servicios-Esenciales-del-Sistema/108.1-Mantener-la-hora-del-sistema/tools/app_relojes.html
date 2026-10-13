@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>108.1 Hora del sistema · app_relojes</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 90px;
+  white-space: pre-wrap;
+}
+.caja b {
+  color: var(--amar);
+}
+.reloj {
+  display: inline-block;
+  background: #eef3fa;
+  border: 2px solid var(--azul);
+  border-radius: 10px;
+  padding: 10px;
+  margin: 6px;
+  min-width: 210px;
+  text-align: center;
+}
+.reloj b {
+  display: block;
+  color: var(--azul);
+  font-size: 1.25rem;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>108.1 Mantener la hora del sistema <span class="peso">Peso 3 · v5.0</span></h1>
+<p>Objetivo: reloj hardware (RTC) frente a reloj del sistema, NTP con
+<code>chrony/ntpd</code>, <code>timedatectl</code> y <code>pool.ntp.org</code>.</p>
+</header>
+<main>
+<!-- 1: dos relojes -->
+<section>
+<h2>1 · Dos relojes: RTC vs sistema</h2>
+<div class="reloj">RTC (hardware / BIOS)<b id="rtc">--:--:--</b><small>sobrevive apagado · deriva mucho</small></div>
+<div class="reloj">System clock (kernel)<b id="sys">--:--:--</b><small>UTC interno · se muestra según zona</small></div>
+<br>
+<button onclick="sinc()">Sincronizar hwclock --systohc</button>
+<button class="sec" onclick="deriva()">Simular deriva +5 min</button>
+<button class="sec" onclick="estado()">timedatectl status</button>
+<div class="caja" id="c">Pulsa un botón…</div>
+<table>
+<tr><th>Comando</th><th>Efecto</th></tr>
+<tr><td><code>hwclock -r</code></td><td>lee el RTC</td></tr>
+<tr><td><code>hwclock -w</code></td><td>graba RTC desde sistema</td></tr>
+<tr><td><code>timedatectl set-ntp true</code></td><td>activa NTP</td></tr>
+<tr><td><code>date; date -u</code></td><td>local frente a UTC</td></tr>
+</table>
+<p>Regla de oro: el sistema trabaja en <b>UTC</b>; la zona solo
+afecta a la <i>presentación</i>.</p>
+</section>
+<!-- 2: NTP -->
+<section>
+<h2>2 · NTP: chrony frente a ntpd clásico</h2>
+<button onclick="ntp('chrony')">chrony (moderno)</button>
+<button onclick="ntp('ntpd')">ntpd (clásico)</button>
+<button onclick="ntp('once')">ntpdate / puntual</button>
+<button class="sec" onclick="ntp('stratum')">estratos</button>
+<div class="caja" id="n">Elige…</div>
+<div class="nota">Servidores comunitarios:
+<code>0.pool.ntp.org … 3.pool.ntp.org</code>. Config chrony en
+<code>/etc/chrony.conf</code>; comprobar con <code>chronyc sources</code>
+y <code>chronyc tracking</code>.</div>
+</section>
+<!-- 3: zona -->
+<section>
+<h2>3 · Zona y examen</h2>
+<p>Preguntas típicas: ¿dónde se guarda la zona? → enlace
+<code>/etc/localtime</code> a <code>/usr/share/zoneinfo/…</code>.
+¿Reloj en UTC o local en dual-boot? → se fija con
+<code>timedatectl set-local-rtc 1</code> (solo si Windows lo exige).</p>
+<table>
+<tr><th>Estrato</th><th>Fuente</th></tr>
+<tr><td>stratum 0</td><td>reloj atómico / GPS</td></tr>
+<tr><td>stratum 1</td><td>servidor clavado al 0</td></tr>
+<tr><td>stratum 2+</td><td>pool público, tu chrony…</td></tr>
+</table>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 108.1 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Relojes ----------
+function tick() {
+  let n = new Date();
+  document.getElementById("sys").textContent = n.toLocaleTimeString("es-ES");
+  let r = new Date(n.getTime() + (window._d || 0));
+  document.getElementById("rtc").textContent = r.toLocaleTimeString("es-ES");
+}
+setInterval(tick, 1000);
+tick();
+window._d = 0;
+function deriva() {
+  window._d += 5 * 60000;
+  let txt = "¡El RTC se adelantó 5 min! Observa la diferencia.\n";
+  txt += "chronyd lo corrige poco a poco (slew) o hwclock -w.";
+  document.getElementById("c").textContent = txt;
+}
+function sinc() {
+  window._d = 0;
+  let txt = "hwclock --systohc: RTC := system clock ✔\n";
+  txt += "timedatectl set-ntp true activa sincronización.";
+  document.getElementById("c").textContent = txt;
+}
+function estado() {
+  let txt = "Local time: dom 2026-10-11 10:24 (CEST)\n";
+  txt += "Universal time: dom 2026-10-11 08:24 UTC\n";
+  txt += "RTC time: dom 2026-10-11 08:24\n";
+  txt += "NTP service: active · System clock synchronized: yes";
+  document.getElementById("c").textContent = txt;
+}
+// ---------- NTP ----------
+function ntp(k) {
+  let m = {
+    chrony: "chrony: chronyd + chronyc\n/etc/chrony.conf → server 0.pool.ntp.org iburst\nchronyc sources -v · ideal en portátiles/VM",
+    ntpd: "ntpd clásico: /etc/ntp.conf → server …\nntpq -p muestra peers · servicio ntpd/ntp\nMás rígido; chrony lo sustituye.",
+    once: "Puntual: ntpdate pool.ntp.org (obsoleto) o chronyd -q\nSolo ajusta una vez; no mantiene la deriva.",
+    stratum: "stratum 1 = atómico · 2 = pool · 3+ = clientes\nCuanto menor, más autoridad. chronyc tracking lo muestra."
+  };
+  document.getElementById("n").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Qué reloj sobrevive al apagado?", o: ["system clock", "RTC / hardware", "ninguno"], c: 1,
+    e: "El RTC lleva pila propia." },
+  { q: "¿En qué trabaja internamente el kernel?", o: ["hora local", "UTC", "epoch en minutos"], c: 1,
+    e: "UTC; la zona solo decora la salida." },
+  { q: "Comando que activa NTP en systemd:", o: ["timedatectl set-ntp true", "hwclock -r", "date -s"], c: 0,
+    e: "timedatectl gestiona NTP + zona." },
+  { q: "¿Qué es pool.ntp.org?", o: ["un demonio", "grupo comunitario de servidores NTP", "un huso horario"], c: 1,
+    e: "Pool voluntario mundial por zonas." },
+  { q: "Herramienta para ver fuentes de chrony:", o: ["chronyc sources", "ntp.conf", "journalctl -u hora"], c: 0,
+    e: "chronyc sources / tracking." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡En hora!" : n >= 3 ? "Bien" : "Repasa RTC vs system");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

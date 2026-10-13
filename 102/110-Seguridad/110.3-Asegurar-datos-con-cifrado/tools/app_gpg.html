@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>110.3 Cifrado GPG/SSH · app_gpg</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  min-height: 100px;
+}
+.caja b {
+  color: var(--amar);
+}
+textarea {
+  width: 100%;
+  min-height: 60px;
+  font-family: monospace;
+  border-radius: 8px;
+  padding: 8px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 6px;
+  font-size: 0.85rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>110.3 Asegurar datos con cifrado <span class="peso">Peso 3 · v5.0</span></h1>
+<p>Objetivo: simétrico frente a asimétrico, llavero GPG (cifrar/firmar/verificar/revocar),
+claves SSH y túneles.</p>
+</header>
+<main>
+<!-- 1: simétrico vs asimétrico -->
+<section>
+<h2>1 · Simétrico vs asimétrico + juguete César</h2>
+<table>
+<tr><th></th><th>Simétrico</th><th>Asimétrico</th></tr>
+<tr><td>Claves</td><td>1 compartida (rápido)</td><td>pública + privada (seguro)</td></tr>
+<tr><td>Ejemplos</td><td>AES, ChaCha20, <code>gpg -c</code></td><td>RSA, Ed25519, <code>gpg -e</code></td></tr>
+<tr><td>Uso</td><td>volumen de datos</td><td>intercambio de clave + firmas</td></tr>
+<tr><td>Riesgo</td><td>repartir la clave</td><td>más lento</td></tr>
+</table>
+<p>Prueba el concepto (César didáctico, NO real):</p>
+<textarea id="txt">Hola LPIC</textarea>
+<br>
+<button onclick="cesar(3)">Cifrar +3</button>
+<button onclick="cesar(-3)">Descifrar −3</button>
+<button class="sec" onclick="hash()">Simular hash</button>
+<div class="caja" id="cc">…</div>
+<div class="nota">GPG combina ambos mundos (híbrido): cifra los datos
+con AES aleatoria y esa clave con la pública del destino.</div>
+</section>
+<!-- 2: GPG + SSH -->
+<section>
+<h2>2 · Llavero GPG + SSH</h2>
+<button onclick="gpg('gen')">gpg --gen-key</button>
+<button onclick="gpg('enc')">cifrar</button>
+<button onclick="gpg('firm')">firmar / verificar</button>
+<button onclick="gpg('rev')">revocar</button>
+<button class="sec" onclick="gpg('ssh')">SSH keys + túnel</button>
+<div class="caja" id="g">Pulsa…</div>
+<table>
+<tr><th>Permiso</th><th>Valor</th></tr>
+<tr><td><code>~/.ssh</code></td><td>700</td></tr>
+<tr><td><code>authorized_keys</code></td><td>600</td></tr>
+<tr><td><code>id_ed25519</code> (privada)</td><td>600, nunca se comparte</td></tr>
+</table>
+</section>
+<!-- 3: túneles -->
+<section>
+<h2>3 · Túneles SSH que caen en examen</h2>
+<table>
+<tr><th>Orden</th><th>Efecto</th></tr>
+<tr><td><code>ssh -L 8080:localhost:80 srv</code></td><td>tu 8080 → 80 del srv</td></tr>
+<tr><td><code>ssh -R 9090:localhost:3000 srv</code></td><td>9090 del srv → tu 3000</td></tr>
+<tr><td><code>ssh -X srv</code></td><td>X11 forwarding</td></tr>
+<tr><td><code>ssh -J salto srv2</code></td><td>salto (jump host)</td></tr>
+</table>
+<p>Agente: <code>ssh-agent</code> + <code>ssh-add</code> guarda la
+frase en memoria para no teclearla cada vez.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 110.3 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- César ----------
+function cesar(n) {
+  let t = document.getElementById("txt").value;
+  let o = "";
+  for (let ch of t) {
+    let c = ch.charCodeAt(0);
+    if (/[a-zA-Z]/.test(ch)) {
+      let b = ch <= "Z" ? 65 : 97;
+      o += String.fromCharCode((c - b + n + 26) % 26 + b);
+    } else {
+      o += ch;
+    }
+  }
+  document.getElementById("cc").textContent =
+    "Resultado: " + o + "\nGPG real: gpg -c (simétrico) · gpg -e -r ana (asimétrico)";
+}
+function hash() {
+  let t = document.getElementById("txt").value;
+  let s = 0;
+  for (let ch of t) { s = (s * 31 + ch.charCodeAt(0)) >>> 0; }
+  document.getElementById("cc").textContent =
+    "Hash didáctico (NO criptográfico): " + s.toString(16) +
+    "\nReales: SHA-256 / SHA-512 (sha256sum fichero).";
+}
+// ---------- GPG ----------
+function gpg(k) {
+  let m = {
+    gen: "gpg --full-generate-key  →  par en ~/.gnupg/\ngpg --list-secret-keys --keyid-format LONG\ngpg --armor --export ana > ana.pub  (compartir)",
+    enc: "SIMÉTRICO: gpg -c secreto.txt  →  .gpg (pide frase)\nASIMÉTRICO: gpg -e -r ana informe.txt\nDESCIFRAR: gpg -d informe.txt.gpg",
+    firm: "Firmar: gpg --clearsign doc.txt  →  .asc (autoría, NO oculta)\nVerificar: gpg --verify doc.txt.asc\nCifrar+firmar: gpg -se -r ana doc",
+    rev: "Si pierdes la privada o cambia el mail:\ngpg --gen-revoke ana > revoca.asc\ngpg --import revoca.asc + enviar a keyserver",
+    ssh: "ssh-keygen -t ed25519 -C 'murci@lpic'\nssh-copy-id user@server  →  instala .pub en authorized_keys\nTÚNEL: ssh -L 8080:localhost:80 server\n~/.ssh 700 · authorized_keys 600"
+  };
+  document.getElementById("g").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Qué cifra y descifra con la misma clave?", o: ["asimétrico", "simétrico", "firma"], c: 1,
+    e: "Simétrico: una sola clave secreta." },
+  { q: "Para que solo Ana lea un mensaje GPG:", o: ["cifrar con su pública", "cifrar con tu privada", "firmar sin cifrar"], c: 0,
+    e: "Se cifra con la pública del destino." },
+  { q: "¿Qué demuestra una firma GPG?", o: ["confidencialidad", "autoría e integridad", "anonimato"], c: 1,
+    e: "Firmar no oculta; autentica." },
+  { q: "Comando que instala tu pública en un servidor:", o: ["ssh-copy-id", "ssh-add", "sshd"], c: 0,
+    e: "ssh-copy-id copia a authorized_keys." },
+  { q: "Permiso correcto de authorized_keys:", o: ["644", "600", "777"], c: 1,
+    e: "600: solo tu usuario." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Cripto listo!" : n >= 3 ? "Bien" : "Repasa simétrico vs asimétrico");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

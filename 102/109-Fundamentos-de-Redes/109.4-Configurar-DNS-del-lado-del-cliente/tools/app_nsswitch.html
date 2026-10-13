@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>109.4 DNS cliente · app_nsswitch</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  min-height: 90px;
+}
+.caja b {
+  color: var(--amar);
+}
+input, select {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+  margin: 3px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>109.4 Configurar DNS del lado del cliente <span class="peso">Peso 2 · v5.0</span></h1>
+<p>Objetivo: orden en <code>/etc/nsswitch.conf</code> (<code>files/dns</code>),
+<code>/etc/hosts</code>, <code>/etc/resolv.conf</code> y <code>dig/host/getent</code>.</p>
+</header>
+<main>
+<!-- 1: nsswitch -->
+<section>
+<h2>1 · Ordena nsswitch: ¿files o dns primero?</h2>
+<p>El orden decide quién puede suplantar a quién:</p>
+<button onclick="ord('fd')">files dns (clásico)</button>
+<button onclick="ord('df')">dns files (raro)</button>
+<button class="sec" onclick="ord('fdmdns')">files mdns dns</button>
+<p>Destino <input id="dest" value="mi-servidor" size="14">
+<button class="sec" onclick="resuelve()">Resolver</button></p>
+<div class="caja" id="o">hosts: files dns …</div>
+<div class="nota">Con <code>files dns</code>, una línea en
+<code>/etc/hosts</code> gana al DNS: útil para pruebas y peligroso
+si se olvida (típica pregunta trampa).</div>
+</section>
+<!-- 2: resolv + tools -->
+<section>
+<h2>2 · resolv.conf + herramientas</h2>
+<button onclick="ver('resolv')">Anatomía resolv.conf</button>
+<button onclick="ver('dig')">dig vs host vs getent</button>
+<button onclick="ver('hosts')">Formato /etc/hosts</button>
+<button class="sec" onclick="ver('systemd')">systemd-resolved</button>
+<div class="caja" id="v">Pulsa…</div>
+<table>
+<tr><th>Herramienta</th><th>Respeta nsswitch</th><th>Uso</th></tr>
+<tr><td><code>getent hosts x</code></td><td>sí</td><td>probar resolución real</td></tr>
+<tr><td><code>dig x</code></td><td>no (va directo al DNS)</td><td>depurar zona</td></tr>
+<tr><td><code>host x</code></td><td>no</td><td>resumen rápido</td></tr>
+<tr><td><code>getent -s dns x</code></td><td>fuerza fuente</td><td>comparar</td></tr>
+</table>
+</section>
+<!-- 3: ejemplo -->
+<section>
+<h2>3 · Ejemplo completo</h2>
+<div class="caja">/etc/nsswitch.conf:
+hosts:      files dns
+networks:   files dns
+
+/etc/hosts:
+127.0.0.1   localhost
+192.168.1.50  mi-servidor impresora
+
+/etc/resolv.conf:
+search ejemplo.com
+nameserver 1.1.1.1
+nameserver 8.8.8.8</div>
+<p><code>search</code> completa nombres cortos; <code>nameserver</code>
+máximo 3. Si lo gestiona NetworkManager o systemd-resolved, no lo
+edites a mano (mira <code>resolvectl status</code>).</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 109.4 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Orden ----------
+let orden = "files dns";
+function ord(k) {
+  if (k === "fd") { orden = "files dns"; }
+  else if (k === "df") { orden = "dns files"; }
+  else { orden = "files mdns dns"; }
+  let nota = "primero /etc/hosts (rápido, local), luego DNS";
+  if (k === "df") { nota = "primero DNS (lento, ignora hosts salvo fallo)"; }
+  if (k === "fdmdns") { nota = "+ mdns (Avahi .local) en medio"; }
+  document.getElementById("o").textContent =
+    "hosts:  " + orden + "\n# " + nota + "\nPulsa Resolver para simular.";
+}
+ord("fd");
+function resuelve() {
+  let d = document.getElementById("dest").value || "host";
+  let primero = orden.split(" ")[0];
+  let txt = "getent hosts " + d + "\n";
+  if (primero === "files") {
+    txt += "1. consulta files (/etc/hosts: 127.0.0.1 localhost…)\n";
+  } else {
+    txt += "1. consulta " + primero + " (pregunta a nameserver)\n";
+  }
+  txt += "2. si no hay respuesta → " + orden.split(" ").slice(1).join(" ") + "\n";
+  txt += "OJO: dig " + d + " IGNORARÍA /etc/hosts (no usa nsswitch).";
+  document.getElementById("o").textContent = txt;
+}
+// ---------- Fichas ----------
+function ver(k) {
+  let m = {
+    resolv: "nameserver 1.1.1.1   # DNS (hasta 3)\nsearch ejemplo.com   # sufijo cortos\noptions ndots:1 timeout:2\n# ¡Lo gestiona NetworkManager/systemd-resolved!",
+    dig: "dig ejemplo.com        → completa (ANSWER, time)\ndig +short ejemplo.com → solo IP\nhost ejemplo.com       → resumen\ngetent hosts nombre    → respeta nsswitch",
+    hosts: "127.0.0.1   localhost\n::1         localhost\n192.168.1.50  mi-servidor impresora\n# IP + canónico + alias",
+    systemd: "resolvectl status      → DNS por enlace\nresolvectl query host  → prueba con caché\n/etc/systemd/resolved.conf → DNS= / FallbackDNS="
+  };
+  document.getElementById("v").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "Con 'hosts: files dns', ¿qué se consulta primero?", o: ["DNS", "/etc/hosts", "ninguno"], c: 1,
+    e: "files = /etc/hosts primero." },
+  { q: "Fichero con los nameserver:", o: ["/etc/nsswitch.conf", "/etc/resolv.conf", "/etc/hosts"], c: 1,
+    e: "resolv.conf: nameserver + search." },
+  { q: "¿Qué respeta el orden nsswitch?", o: ["ping directo a IP", "getent hosts", "dig @8.8.8.8"], c: 1,
+    e: "getent pasa por nsswitch; dig no." },
+  { q: "dig +short sirve para…", o: ["solo la respuesta", "más verboso", "editar DNS"], c: 0,
+    e: "Ideal para scripts." },
+  { q: "Línea válida de /etc/hosts:", o: ["hosts: files dns", "192.168.1.50 mi-servidor", "nameserver 1.1.1.1"], c: 1,
+    e: "IP + nombre (+alias)." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Resuelves todo!" : n >= 3 ? "Bien" : "Repasa nsswitch");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>107.3 Locales · app_locales</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 90px;
+  white-space: pre-wrap;
+}
+.caja b {
+  color: var(--amar);
+}
+.pieza {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 4px 10px;
+  margin: 2px;
+  font-family: monospace;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 2px solid var(--azul);
+}
+select, input {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+  margin: 3px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>107.3 Localización e internacionalización <span class="peso">Peso 3 · v5.0</span></h1>
+<p>Objetivo: formato <code>lengua_PAÍS.Codificación</code>, precedencia
+<code>LC_ALL &gt; LC_* &gt; LANG</code>, <code>localectl</code> y husos horarios.</p>
+</header>
+<main>
+<!-- 1: disección -->
+<section>
+<h2>1 · Disecciona es_ES.UTF-8</h2>
+<p>Toca cada pieza del locale:</p>
+<div>
+<span class="pieza" style="background:#002855;color:#fff" onclick="ex('es = lengua (ISO 639): español. Decide mensajes y orden.')">es</span>
+<span class="pieza" style="background:#fff" onclick="ex('_ = separador entre lengua y país.')">_</span>
+<span class="pieza" style="background:#FDB913;color:#002855" onclick="ex('ES = país (ISO 3166): España. Moneda €, formato fecha DD/MM, teléfono +34.')">ES</span>
+<span class="pieza" style="background:#fff" onclick="ex('. = separa la codificación.')">.</span>
+<span class="pieza" style="background:#1a7f37;color:#fff" onclick="ex('UTF-8 = codificación Unicode: ñ, acentos, emojis. Sin ella verías �.')">UTF-8</span>
+<span class="pieza" style="background:#ddd" onclick="ex('@euro / modificadores: variantes antiguas. Hoy casi no se usan.')">@mod</span>
+</div>
+<div class="caja" id="ex">Toca una pieza…</div>
+<table>
+<tr><th>Comando</th><th>Efecto</th></tr>
+<tr><td><code>locale</code></td><td>muestra valores activos</td></tr>
+<tr><td><code>locale -a</code></td><td>locales instalados</td></tr>
+<tr><td><code>localectl set-locale LANG=…</code></td><td>fija por defecto</td></tr>
+<tr><td><code>localectl set-keymap es</code></td><td>teclado consola</td></tr>
+</table>
+</section>
+<!-- 2: precedencia -->
+<section>
+<h2>2 · Precedencia + categorías LC_*</h2>
+<p>Categorías: <code>LC_TIME</code> (fecha), <code>LC_NUMERIC</code> (coma/punto),
+<code>LC_MONETARY</code> (moneda), <code>LC_MESSAGES</code> (idioma mensajes),
+<code>LC_COLLATE</code> (orden), <code>LC_CTYPE</code> (caracteres).</p>
+<button onclick="revela()">Revelar precedencia</button>
+<button class="sec" onclick="ejemplo()">Ejemplo mixto</button>
+<div class="caja" id="pr">LC_ALL &gt; LC_* &gt; LANG … pulsa para explicar</div>
+<div class="nota">Truco de examen: <code>LC_ALL=C sort</code> ordena
+byte a byte (rápido y predecible) aunque el sistema esté en español.</div>
+</section>
+<!-- 3: timezone -->
+<section>
+<h2>3 · Huso horario</h2>
+<p>
+Zona:
+<select id="tz">
+<option>Europe/Madrid</option>
+<option>Atlantic/Canary</option>
+<option>America/Mexico_City</option>
+<option>America/Argentina/Buenos_Aires</option>
+<option>UTC</option>
+</select>
+<button onclick="tz()">Aplicar zona</button>
+</p>
+<div class="caja" id="tzo">timedatectl set-timezone …</div>
+<p>Ficheros: <code>/etc/localtime</code> (enlace a
+<code>/usr/share/zoneinfo/…</code>) y <code>/etc/timezone</code> en Debian.
+Ver con <code>timedatectl status</code> y <code>date</code>.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 107.3 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp2"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Disección ----------
+function ex(t) {
+  document.getElementById("ex").textContent = t;
+}
+// ---------- Precedencia ----------
+function revela() {
+  let txt = "LC_ALL (jefe absoluto: si existe, anula todo)\n";
+  txt += "  > LC_* concretas (LC_TIME, LC_NUMERIC…)\n";
+  txt += "  > LANG (valor por defecto)\n";
+  txt += "  > C/POSIX (mínimo, sin traducir)";
+  document.getElementById("pr").textContent = txt;
+}
+function ejemplo() {
+  let txt = "LANG=es_ES.UTF-8 LC_TIME=C date\n";
+  txt += "→ mensajes en español pero fecha en formato C.\n";
+  txt += "LC_ALL=es_ES.UTF-8 anularía cualquier LC_* suelto.";
+  document.getElementById("pr").textContent = txt;
+}
+// ---------- Timezone ----------
+function tz() {
+  let z = document.getElementById("tz").value;
+  let tabla = {
+    "Europe/Madrid": "UTC+1 (+2 en verano)",
+    "Atlantic/Canary": "UTC+0 (+1 en verano)",
+    "America/Mexico_City": "UTC-6",
+    "America/Argentina/Buenos_Aires": "UTC-3",
+    "UTC": "UTC+0"
+  };
+  let txt = "timedatectl set-timezone " + z + "\n";
+  txt += "Efecto: " + (tabla[z] || "") + "\n";
+  txt += "Enlace /etc/localtime → /usr/share/zoneinfo/" + z;
+  document.getElementById("tzo").textContent = txt;
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "En es_ES.UTF-8, ES indica…", o: ["codificación", "país / convenciones", "idioma"], c: 1,
+    e: "Lengua_PAÍS.codificación." },
+  { q: "¿Qué variable manda sobre todas?", o: ["LANG", "LC_TIME", "LC_ALL"], c: 2,
+    e: "LC_ALL anula a todas las demás." },
+  { q: "Si LC_ALL=C y LANG=es_ES.UTF-8, ¿qué se usa?", o: ["es_ES.UTF-8", "C", "ninguna"], c: 1,
+    e: "LC_ALL gana siempre." },
+  { q: "Comando moderno para fijar locale:", o: ["localectl set-locale", "tzconfig", "export PATH"], c: 0,
+    e: "localectl gestiona locale + keymap + X11." },
+  { q: "¿Qué define la zona horaria?", o: ["/etc/localtime", "/etc/passwd", "/etc/hosts"], c: 0,
+    e: "/etc/localtime enlaza a zoneinfo." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Políglota!" : n >= 3 ? "Bien" : "Repasa LC_ALL>LC_*>LANG");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp2").innerHTML = det;
+}
+</script>
+</body>
+</html>

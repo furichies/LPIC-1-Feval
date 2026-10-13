@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>107.1 Usuarios y grupos · app_passwd</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.campos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+.campo {
+  background: #eef3fa;
+  border: 2px solid var(--azul);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-family: monospace;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.campo small {
+  display: block;
+  font-family: System-ui;
+  font-size: 0.72rem;
+  color: #44566f;
+}
+.campo.act {
+  background: var(--amar);
+  border-color: var(--azul);
+}
+.exp {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: monospace;
+  min-height: 60px;
+  white-space: pre-wrap;
+}
+input, select {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+  margin: 3px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>107.1 Cuentas de usuario, grupo y ficheros <span class="peso">Peso 5 · v5.0</span></h1>
+<p>Objetivo: <code>/etc/passwd</code>, <code>/etc/shadow</code>, <code>/etc/group</code>,
+<code>useradd/usermod/userdel</code>, <code>chage</code>, UID/GID y sudo.</p>
+</header>
+<main>
+<!-- 1: anatomía -->
+<section>
+<h2>1 · Anatomía por campos (toca cada campo)</h2>
+<p><b>/etc/passwd</b> — 7 campos separados por <code>:</code> (legible por todos).</p>
+<div class="campos" id="pw"></div>
+<p><b>/etc/shadow</b> — 9 campos (solo root, permiso 640).</p>
+<div class="campos" id="sh"></div>
+<p><b>/etc/group</b> — 4 campos.</p>
+<div class="campos" id="gr"></div>
+<div class="exp" id="exp">Toca un campo para ver su explicación…</div>
+<div class="nota">Ejemplo realista:<br>
+<code>murci:x:1001:1001:Murci,,,:/home/murci:/bin/bash</code><br>
+<code>murci:$6$salt$hash…:19000:0:99999:7:::</code><br>
+<code>devs:x:1005:murci,ana</code></div>
+</section>
+<!-- 2: simulador -->
+<section>
+<h2>2 · Simulador useradd / usermod / chage</h2>
+<p>
+Usuario <input id="u" value="murci" size="8">
+UID <input id="uid" value="1001" size="6">
+Shell
+<select id="shl">
+<option>/bin/bash</option>
+<option>/usr/sbin/nologin</option>
+</select>
+</p>
+<button onclick="gen('add')">useradd</button>
+<button onclick="gen('mod')">usermod -l</button>
+<button onclick="gen('del')">userdel</button>
+<button onclick="gen('chage')">chage -E</button>
+<button class="sec" onclick="gen('group')">groupadd</button>
+<div class="exp" id="cmd">El comando aparecerá aquí…</div>
+<table>
+<tr><th>Rango UID</th><th>Uso</th></tr>
+<tr><td>0</td><td>root (¡solo uno!)</td></tr>
+<tr><td>1–999</td><td>sistema / servicios</td></tr>
+<tr><td>1000+</td><td>humanos (1000 el primero)</td></tr>
+</table>
+<p><code>id murci</code>, <code>groups</code>,
+<code>getent passwd murci</code>. Sudo en <code>/etc/sudoers</code>
+(editar con <code>visudo</code>). Plantilla de nuevos en
+<code>/etc/login.defs</code> y <code>/etc/skel</code>.</p>
+</section>
+<!-- 3: chage -->
+<section>
+<h2>3 · Envejecimiento con chage</h2>
+<button onclick="chageInfo('l')">chage -l (ver)</button>
+<button onclick="chageInfo('E')">chage -E (caducidad)</button>
+<button onclick="chageInfo('M')">chage -M (máximo)</button>
+<div class="exp" id="ch">Pulsa…</div>
+<p>Verifica coherencia con <code>pwck</code> y <code>grpck</code>.
+Bloquear sin borrar: <code>usermod -L</code> (lock),
+desbloquear: <code>usermod -U</code>.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · UID y sudo (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="ex2"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Anatomía ----------
+const D = {
+  pw: [
+    ["murci", "login"],
+    ["x", "la clave está en shadow"],
+    ["1001", "UID"],
+    ["1001", "GID principal"],
+    ["Murci,,,", "GECOS / comentario"],
+    ["/home/murci", "home"],
+    ["/bin/bash", "shell"]
+  ],
+  sh: [
+    ["murci", "usuario"],
+    ["$6$…", "hash (6=sha512)"],
+    ["19000", "último cambio (días desde 1970)"],
+    ["0", "mínimo entre cambios"],
+    ["99999", "máximo validez"],
+    ["7", "aviso previo"],
+    ["", "inactivo tras expirar"],
+    ["", "caducidad cuenta"],
+    ["", "reservado"]
+  ],
+  gr: [
+    ["devs", "nombre"],
+    ["x", "password de grupo"],
+    ["1005", "GID"],
+    ["murci,ana", "miembros"]
+  ]
+};
+function pinta(id, arr) {
+  let d = document.getElementById(id);
+  d.innerHTML = "";
+  arr.forEach(function (c) {
+    let s = document.createElement("div");
+    s.className = "campo";
+    s.innerHTML = c[0] + "<small>" + c[1] + "</small>";
+    s.onclick = function () {
+      document.querySelectorAll(".campo").forEach(function (e) {
+        e.classList.remove("act");
+      });
+      s.classList.add("act");
+      document.getElementById("exp").textContent =
+        "Campo «" + c[0] + "» → " + c[1];
+    };
+    d.appendChild(s);
+  });
+}
+pinta("pw", D.pw);
+pinta("sh", D.sh);
+pinta("gr", D.gr);
+// ---------- Simulador ----------
+function gen(k) {
+  let u = document.getElementById("u").value || "murci";
+  let id = document.getElementById("uid").value || "1001";
+  let s = document.getElementById("shl").value;
+  let m = {
+    add: "useradd -m -u " + id + " -s " + s + " " + u +
+      "\n# -m crea home · -u fija UID · -s shell",
+    mod: "usermod -l nuevo_" + u + " " + u + "  # renombra login\n" +
+      "usermod -aG devs " + u + "  # -aG añade sin expulsar",
+    del: "userdel " + u + "       # borra cuenta\n" +
+      "userdel -r " + u + "    # + home y correo",
+    chage: "chage -E 2027-01-01 " + u + "  # caducidad\n" +
+      "chage -l " + u + "               # ver envejecimiento",
+    group: "groupadd -g 1005 devs\n" +
+      "gpasswd -a " + u + " devs  # alternativa a usermod -aG"
+  };
+  document.getElementById("cmd").textContent = m[k];
+}
+// ---------- chage ----------
+function chageInfo(k) {
+  let m = {
+    l: "chage -l murci\nLast change: oct 01, 2026\nMax days: 99999 · Warn: 7 · Expire: never",
+    E: "chage -E 2027-01-01 murci  → la cuenta caduca ese día\nchage -E -1 murci  → quita la caducidad",
+    M: "chage -M 90 murci  → obliga a cambiar cada 90 días\nchage -m 7 murci   → mínimo 7 días entre cambios"
+  };
+  document.getElementById("ch").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Qué UID tiene siempre root?", o: ["1000", "0", "1"], c: 1,
+    e: "UID 0 = superusuario." },
+  { q: "¿Dónde está el hash de la contraseña?", o: ["/etc/passwd", "/etc/shadow", "/etc/group"], c: 1,
+    e: "passwd lleva 'x'; el hash vive en shadow (640)." },
+  { q: "useradd -aG es erróneo porque…", o: ["-aG es de usermod", "no existen grupos", "falta sudo"], c: 0,
+    e: "usermod -aG añade a suplementarios sin expulsar." },
+  { q: "¿Cómo se edita sudoers con seguridad?", o: ["nano directo", "visudo", "echo > sudoers"], c: 1,
+    e: "visudo valida la sintaxis antes de guardar." },
+  { q: "Shell para cuenta de servicio sin login:", o: ["/bin/bash", "/usr/sbin/nologin", "/bin/sh siempre"], c: 1,
+    e: "nologin muestra aviso y sale." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Admin total!" : n >= 3 ? "Bien" : "Relee passwd/shadow");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("ex2").innerHTML = det;
+}
+</script>
+</body>
+</html>

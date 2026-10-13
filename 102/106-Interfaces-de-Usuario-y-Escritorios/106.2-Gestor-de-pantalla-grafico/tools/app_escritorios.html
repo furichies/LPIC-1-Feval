@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>106.2 Escritorios y acceso gráfico remoto · LPIC-1 v5.0</title>
+<style>
+:root{--azul:#002855;--amar:#FDB913;--bg:#f4f6fa;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#1c2733}
+header{background:var(--azul);color:#fff;padding:18px;border-bottom:6px solid var(--amar)}
+header h1{margin:0;font-size:1.25rem}header p{margin:6px 0 0;font-size:.92rem}
+.badge{display:inline-block;background:var(--amar);color:var(--azul);font-weight:700;border-radius:20px;padding:2px 12px;margin-top:8px;font-size:.85rem}
+main{max-width:960px;margin:0 auto;padding:16px}
+section{background:var(--card);border-radius:10px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(0,40,85,.12)}
+h2{color:var(--azul);border-left:6px solid var(--amar);padding-left:10px;font-size:1.1rem}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+button{cursor:pointer;border:2px solid var(--azul);background:#fff;color:var(--azul);border-radius:8px;padding:8px 14px;font-weight:700}
+button.act,button:hover{background:var(--azul);color:var(--amar)}
+.ficha{background:#eef3fa;border:1px solid #b9c8e2;border-radius:8px;padding:12px;min-height:120px}
+code{background:#0d1b2e;color:#ffd75e;padding:2px 6px;border-radius:5px;font-size:.88rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:10px}
+th{background:var(--azul);color:#fff;padding:8px}td{border:1px solid #c6d2e4;padding:8px;vertical-align:top}
+tr:nth-child(even) td{background:#f2f6fc}
+select,input{padding:8px;border-radius:6px;border:1px solid #888;width:100%;margin:6px 0}
+.result{background:#e8f5e9;border:1px solid #2e7d32;border-radius:8px;padding:10px;margin-top:8px}
+.q{border:1px solid #c6d2e4;border-radius:8px;padding:10px;margin:8px 0}
+.q p{font-weight:700;margin:0 0 6px}label{display:block;margin:4px 0;font-size:.92rem}
+#nota{font-weight:800;color:var(--azul)}footer{text-align:center;font-size:.82rem;color:#555;padding:16px}
+.term{background:#10233f;color:#c8ff9e;border-radius:8px;padding:10px;font-family:monospace;font-size:.85rem;min-height:70px;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<header>
+<h1>106.2 Gestor de pantalla gráfico y escritorios</h1>
+<p>Objetivo 106.2 · Lección: escritorios Linux y acceso gráfico remoto · <strong>Peso v5.0: 1</strong></p>
+<span class="badge">KDE · GNOME · Xfce · VNC / RDP / SPICE / XDMCP</span>
+</header>
+<main>
+<section>
+<h2>1 · Comparador de escritorios</h2>
+<p>Pulsa cada escritorio para ver su filosofía, gestor base y caso típico de examen.</p>
+<div class="btns">
+<button class="act" onclick="ver('kde',this)">KDE Plasma</button>
+<button onclick="ver('gnome',this)">GNOME</button>
+<button onclick="ver('xfce',this)">Xfce</button>
+</div>
+<div class="ficha" id="ficha"></div>
+<div class="term" id="termDesk"></div>
+</section>
+<section>
+<h2>2 · Protocolos gráficos remotos</h2>
+<table>
+<tr><th>Protocolo</th><th>Puerto</th><th>Idea clave</th><th>Cuándo usarlo</th></tr>
+<tr><td><b>VNC</b> (RFB)</td><td>5900+N</td><td>Comparte el framebuffer; sencillo y multiplataforma.</td><td>Aula, soporte puntual, ver escritorio existente.</td></tr>
+<tr><td><b>RDP</b> (xrdp)</td><td>3389</td><td>Sesiones por usuario, buen rendimiento, audio/canal.</td><td>Oficina con clientes Windows, varias sesiones.</td></tr>
+<tr><td><b>SPICE</b></td><td>5900-5930</td><td>Diseñado para máquinas virtuales (QEMU/KVM).</td><td>VM con vídeo y USB fluido en virt-manager.</td></tr>
+<tr><td><b>XDMCP</b></td><td>177/UDP</td><td>El display manager anuncia sesiones X por red.</td><td>Terminales ligeros X clásicos (inseguro sin túnel).</td></tr>
+</table>
+<p><b>Caso práctico:</b> elige tu escenario y la app recomienda protocolo:</p>
+<select id="caso" onchange="caso()">
+<option value="">— Elige escenario —</option>
+<option value="aula">Ayudar a un alumno viendo su pantalla actual</option>
+<option value="oficina">10 usuarios Windows con sesión propia en servidor Linux</option>
+<option value="vm">Administrar VM KVM con vídeo fluido</option>
+<option value="thin">Terminales X antiguos que piden login gráfico</option>
+</select>
+<div class="result" id="rCaso" style="display:none"></div>
+</section>
+<section>
+<h2>3 · Gestor de pantalla y Wayland frente a Xorg</h2>
+<p>
+El <b>gestor de pantalla</b> (display manager) es el login gráfico:
+lanza el servidor gráfico y abre tu sesión de escritorio.
+</p>
+<details open>
+<summary><b>GDM (GNOME Display Manager)</b> — el de GNOME</summary>
+<p>
+Es el gestor por defecto en Debian, Ubuntu, Fedora y RHEL con GNOME.
+</p>
+<p>
+Servicio systemd: <code>systemctl status gdm</code>.
+</p>
+<p>
+Config básica en <code>/etc/gdm3/custom.conf</code>
+(p. ej. <code>WaylandEnable=false</code> para forzar Xorg).
+</p>
+<p>
+Comando típico: <code>systemctl set-default graphical.target</code>
+para arrancar siempre en modo gráfico.
+</p>
+</details>
+<details>
+<summary><b>SDDM</b> — el de KDE Plasma</summary>
+<p>
+Ligero, basado en QML y temas visuales. El habitual con Plasma.
+</p>
+<p>
+Servicio systemd: <code>systemctl status sddm</code>.
+</p>
+<p>
+Config en <code>/etc/sddm.conf</code> o <code>/etc/sddm.conf.d/</code>.
+</p>
+<p>
+Ahí se fija el tema, el usuario por defecto y la sesión inicial.
+</p>
+</details>
+<details>
+<summary><b>LightDM</b> — ligero y multi-escritorio</summary>
+<p>
+El clásico de Xfce, LXDE y equipos modestos. Muy configurable.
+</p>
+<p>
+Servicio systemd: <code>systemctl status lightdm</code>.
+</p>
+<p>
+Config en <code>/etc/lightdm/lightdm.conf</code>.
+</p>
+<p>
+Permite invitados, autologin y varios greeters (pantallas de login).
+</p>
+</details>
+<details>
+<summary><b>Wayland frente a Xorg (X11)</b></summary>
+<p>
+<b>Xorg</b> es el servidor gráfico clásico: maduro, compatible con
+red (X forwarding por SSH) y con XDMCP.
+</p>
+<p>
+<b>Wayland</b> es el sustituto moderno: más seguro y fluido,
+pero el reenvío gráfico por red funciona distinto
+(p. ej. con RDP/VNC del propio compositor).
+</p>
+<p>
+Comprueba tu sesión con: <code>echo $XDG_SESSION_TYPE</code>
+(responde <code>wayland</code> o <code>x11</code>).
+</p>
+<p>
+Truco de examen: si algo gráfico remoto falla en Wayland,
+prueba sesión Xorg antes de tocar la red.
+</p>
+</details>
+<details>
+<summary><b>Arranque gráfico o texto</b></summary>
+<p>
+<code>systemctl get-default</code> muestra el objetivo actual.
+</p>
+<p>
+<code>graphical.target</code> = con gestor de pantalla.
+</p>
+<p>
+<code>multi-user.target</code> = solo consola de texto.
+</p>
+<p>
+Cámbialo con <code>systemctl set-default</code> según necesites.
+</p>
+</details>
+</section>
+<section>
+<h2>4 · Quiz · 5 preguntas</h2>
+<div class="q"><p>1. ¿Qué escritorio destaca por ser ligero y adecuado para equipos modestos?</p>
+<label><input type="radio" name="q1" value="0"> KDE Plasma</label>
+<label><input type="radio" name="q1" value="1"> Xfce</label>
+<label><input type="radio" name="q1" value="0"> GNOME Shell por defecto</label></div>
+<div class="q"><p>2. Puerto clásico de una sesión VNC display :1</p>
+<label><input type="radio" name="q2" value="0"> 3389</label>
+<label><input type="radio" name="q2" value="1"> 5901</label>
+<label><input type="radio" name="q2" value="0"> 177</label></div>
+<div class="q"><p>3. ¿Qué protocolo está pensado para virtualización QEMU/KVM?</p>
+<label><input type="radio" name="q3" value="1"> SPICE</label>
+<label><input type="radio" name="q3" value="0"> XDMCP</label>
+<label><input type="radio" name="q3" value="0"> RDP puro de Windows</label></div>
+<div class="q"><p>4. XDMCP usa por defecto…</p>
+<label><input type="radio" name="q4" value="1"> UDP 177 y se recomienda tunelizar por SSH</label>
+<label><input type="radio" name="q4" value="0"> TCP 443 cifrado siempre</label>
+<label><input type="radio" name="q4" value="0"> Solo sockets locales, nunca red</label></div>
+<div class="q"><p>5. Para varias sesiones simultáneas desde clientes Windows conviene…</p>
+<label><input type="radio" name="q5" value="1"> xrdp (RDP) en el servidor Linux</label>
+<label><input type="radio" name="q5" value="0"> Compartir el :0 con VNC sin usuarios</label>
+<label><input type="radio" name="q5" value="0"> Desactivar el gestor de pantalla</label></div>
+<button onclick="corregir()">Corregir quiz</button>
+<p id="nota"></p><div id="fallos"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const D={
+kde:{t:"<b>KDE Plasma</b> · Toolkit Qt · Gestor SDDM. Muy configurable, efectos y ecosistema KDE (Dolphin, Konsole). Ideal si quieres control total y equipo potente.",c:"$ cat /etc/sddm.conf  # tema y sesión por defecto\n$ echo $XDG_CURRENT_DESKTOP  # KDE"},
+gnome:{t:"<b>GNOME</b> · Toolkit GTK · Gestor GDM. Flujo simple, Activities, Wayland por defecto en muchas distros. El de Debian/Ubuntu/RHEL por defecto.",c:"$ systemctl status gdm\n$ gsettings get org.gnome.desktop.interface gtk-theme"},
+xfce:{t:"<b>Xfce</b> · Toolkit GTK, ligero · Gestor LightDM. Rápido, estable, bajo consumo. Perfecto para PCs viejos, VMs y examen de recursos.",c:"$ systemctl status lightdm\n$ xfce4-about  # versión del escritorio"}};
+function ver(k,b){document.querySelectorAll('.btns button').forEach(x=>x.classList.remove('act'));b.classList.add('act');
+document.getElementById('ficha').innerHTML=D[k].t;
+document.getElementById('termDesk').textContent=D[k].c;}
+ver('kde',document.querySelector('.btns button'));
+function caso(){const v=document.getElementById('caso').value,r=document.getElementById('rCaso');
+const M={aula:"<b>VNC</b>: comparte la sesión visible del alumno (p. ej. display :0). Simple para soporte.",
+oficina:"<b>RDP con xrdp</b> (puerto 3389): cada usuario tiene su sesión, se integra con clientes Windows.",
+vm:"<b>SPICE</b>: pensado para QEMU/KVM, mejor vídeo y redirección de USB.",
+thin:"<b>XDMCP</b> (UDP 177): los terminales piden login al display manager. Úsalo solo con túnel SSH/VPN."};
+if(!v){r.style.display='none';return}r.style.display='block';r.innerHTML=M[v];}
+function corregir(){let n=0,f=[];for(let i=1;i<=5;i++){const s=document.querySelector('input[name=q'+i+']:checked');
+if(s&&s.value==="1")n++;else f.push(i);}
+document.getElementById('nota').textContent="Nota: "+n+" / 5"+(n===5?" ¡Perfecto!":"");
+document.getElementById('fallos').innerHTML=f.length?"Revisa las preguntas: "+f.join(", "):"Sin fallos. Display manager dominado.";}
+</script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>107.2 Cron y planificación · app_cron</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.cron {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+.cron div {
+  background: #eef3fa;
+  border: 2px solid var(--azul);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+  flex: 1;
+  min-width: 110px;
+}
+.cron input {
+  width: 100%;
+  text-align: center;
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 6px;
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 80px;
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+.caja b {
+  color: var(--amar);
+}
+.hum {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+input.txt {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>107.2 Automatizar tareas planificando trabajos <span class="peso">Peso 4 · v5.0</span></h1>
+<p>Objetivo: cron de 5 campos, <code>crontab -e/-l</code>, <code>at/batch</code>,
+<code>systemd timers</code> y <code>anacron</code>.</p>
+</header>
+<main>
+<!-- 1: constructor -->
+<section>
+<h2>1 · Constructor cron con lenguaje natural</h2>
+<div class="cron">
+<div>Minuto (0-59)<input id="c0" value="30"></div>
+<div>Hora (0-23)<input id="c1" value="2"></div>
+<div>Día mes (1-31)<input id="c2" value="*"></div>
+<div>Mes (1-12)<input id="c3" value="*"></div>
+<div>Día semana (0-7)<input id="c4" value="1"></div>
+</div>
+<p>Comando <input class="txt" id="cmd" value="/usr/local/bin/copia.sh" size="28"></p>
+<button onclick="traduce()">Traducir</button>
+<button class="sec" onclick="preset('*/15 * * * *')">Cada 15 min</button>
+<button class="sec" onclick="preset('0 0 * * 0')">Domingos</button>
+<button class="sec" onclick="preset('30 2 * * 1')">Lunes 02:30</button>
+<button class="sec" onclick="preset('0 8 1 * *')">Día 1, 08:00</button>
+<div class="caja" id="cout">…</div>
+<div class="hum" id="hum">Descripción en palabras…</div>
+<table>
+<tr><th>Atajo</th><th>Equivale a</th></tr>
+<tr><td><code>@reboot</code></td><td>una vez al arrancar</td></tr>
+<tr><td><code>@daily</code></td><td>0 0 * * *</td></tr>
+<tr><td><code>@hourly</code></td><td>0 * * * *</td></tr>
+</table>
+</section>
+<!-- 2: at/batch/timers -->
+<section>
+<h2>2 · at / batch frente a timers systemd</h2>
+<button onclick="ver('at')">at (una vez)</button>
+<button onclick="ver('batch')">batch (carga baja)</button>
+<button onclick="ver('timer')">systemd timer</button>
+<button class="sec" onclick="ver('anacron')">anacron</button>
+<div class="caja" id="v">Pulsa…</div>
+<p><code>crontab -e</code> edita, <code>-l</code> lista, <code>-r</code> borra.
+Sistema en <code>/etc/crontab</code> (con usuario) y
+<code>/etc/cron.{hourly,daily,weekly,monthly}</code>.
+Permisos: <code>/etc/cron.allow</code> / <code>cron.deny</code>.</p>
+</section>
+<!-- 3: ejemplo timer -->
+<section>
+<h2>3 · Esqueleto de timer systemd</h2>
+<div class="caja">/etc/systemd/system/copia.service:
+[Unit] Description=Copia
+[Service] Type=oneshot ExecStart=/usr/local/bin/copia.sh
+
+/etc/systemd/system/copia.timer:
+[Unit] Description= diaria
+[Timer] OnCalendar=daily Persistent=true
+[Install] WantedBy=timers.target
+
+systemctl enable --now copia.timer
+systemctl list-timers</div>
+<p><code>Persistent=true</code> recupera ejecuciones perdidas con el
+equipo apagado (como anacron).</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 107.2 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="hum" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Constructor ----------
+function preset(p) {
+  let a = p.split(" ");
+  for (let i = 0; i < 5; i++) {
+    document.getElementById("c" + i).value = a[i];
+  }
+  traduce();
+}
+function campo(v, nombre) {
+  if (v === "*") { return "cada " + nombre; }
+  if (v.startsWith("*/")) { return "cada " + v.slice(2) + " " + nombre + "s"; }
+  if (v.includes(",")) { return "en " + nombre + "s " + v; }
+  return nombre + " = " + v;
+}
+function traduce() {
+  let v = [0, 1, 2, 3, 4].map(function (i) {
+    return document.getElementById("c" + i).value.trim() || "*";
+  });
+  let cmd = document.getElementById("cmd").value || "comando";
+  document.getElementById("cout").textContent = v.join(" ") + "  " + cmd;
+  let dias = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+  let dw = "cualquier día de semana";
+  if (v[4] !== "*") {
+    dw = "los " + v[4].split(",").map(function (x) {
+      return dias[+x % 7] || x;
+    }).join(", ");
+  }
+  let txt = "Se ejecuta: minuto " + campo(v[0], "minuto");
+  txt += " · hora " + campo(v[1], "hora");
+  txt += " · día-mes " + v[2] + " · mes " + v[3] + " · " + dw + ".";
+  document.getElementById("hum").textContent = txt;
+}
+traduce();
+// ---------- at / batch / timer ----------
+function ver(k) {
+  let m = {
+    at: "echo backup | at 23:00  →  UNA sola vez hoy a las 23:00\natq = ver cola · atrm N = borrar",
+    batch: "batch  →  se ejecuta CUANDO la carga < 1.5\nIdeal para compilar de noche sin pisar al sistema.",
+    timer: "Timer systemd = 2 ficheros:\ncopia.service (qué) + copia.timer (cuándo: OnCalendar=daily)\nsystemctl enable --now copia.timer · systemctl list-timers",
+    anacron: "anacron: para equipos NO 24/7 (portátiles)\n/etc/anacrontab: periodo retraso nombre comando\nej: 7 15 sem.backup /sbin/backup.sh"
+  };
+  document.getElementById("v").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Cuántos campos de tiempo tiene una entrada de usuario?", o: ["6", "5", "4"], c: 1,
+    e: "min hora dom mes dow + comando (el 6º usuario solo en /etc/crontab)." },
+  { q: "*/15 * * * * significa…", o: ["cada 15 minutos", "a las 15:00", "día 15"], c: 0,
+    e: "*/n = cada n unidades." },
+  { q: "Comando para ver tu crontab:", o: ["cron -l", "crontab -l", "crond -l"], c: 1,
+    e: "crontab -l lista, -e edita, -r borra (¡cuidado!)." },
+  { q: "¿Qué hace at?", o: ["repite cada hora", "ejecuta una vez en el futuro", "desactiva cron"], c: 1,
+    e: "at = one-shot; batch = one-shot con carga baja." },
+  { q: "Equivalente systemd moderno de cron:", o: ["init.d", "timers (.timer + .service)", "/etc/inittab"], c: 1,
+    e: "Cada timer necesita su .service gemelo." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Puntual!" : n >= 3 ? "Bien" : "Repasa los 5 campos");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

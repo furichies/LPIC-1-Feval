@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>110.2 Seguridad del host · app_seguridad_host</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  min-height: 100px;
+}
+.caja b {
+  color: var(--amar);
+}
+.chk {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.chk:hover {
+  background: #e8eef7;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>110.2 Configurar la seguridad del host <span class="peso">Peso 3 · v5.0</span></h1>
+<p>Objetivo: hardening básico — shadow, desactivar servicios/sockets,
+TCP wrappers, <code>ss/nmap</code>, firewall y auditoría.</p>
+</header>
+<main>
+<!-- 1: checklist -->
+<section>
+<h2>1 · Checklist de hardening (márcala)</h2>
+<label class="chk"><input type="checkbox" class="hc"> Contraseñas en <code>/etc/shadow</code> (nunca en passwd) + <code>pwck/grpck</code></label>
+<label class="chk"><input type="checkbox" class="hc"> Sin UID 0 extra: <code>awk -F: '$3==0' /etc/passwd</code></label>
+<label class="chk"><input type="checkbox" class="hc"> Servicios mínimos: <code>systemctl disable --now telnet cups</code></label>
+<label class="chk"><input type="checkbox" class="hc"> Sockets: <code>ss -tulpn</code> — cierra lo que no uses</label>
+<label class="chk"><input type="checkbox" class="hc"> TCP wrappers: <code>/etc/hosts.allow</code> / <code>hosts.deny</code></label>
+<label class="chk"><input type="checkbox" class="hc"> SSH endurecido: sin root, sin password (<code>PermitRootLogin no</code>)</label>
+<label class="chk"><input type="checkbox" class="hc"> Firewall activo + fail2ban para SSH</label>
+<label class="chk"><input type="checkbox" class="hc"> Updates al día + <code>lsof -i</code> sin rarezas</label>
+<button onclick="nota()">Puntuar hardening</button>
+<button class="sec" onclick="todo(true)">Marcar todo</button>
+<button class="sec" onclick="todo(false)">Limpiar</button>
+<div class="caja" id="hn">Marca y puntúa…</div>
+</section>
+<!-- 2: lab -->
+<section>
+<h2>2 · Laboratorio ss / nmap / wrappers</h2>
+<button onclick="lab('ss')">ss -tulpn</button>
+<button onclick="lab('nmap')">nmap localhost</button>
+<button onclick="lab('wrap')">TCP wrappers</button>
+<button class="sec" onclick="lab('lsof')">lsof / last</button>
+<div class="caja" id="lab">Pulsa…</div>
+<table>
+<tr><th>Letra ss</th><th>Significa</th></tr>
+<tr><td>t / u</td><td>tcp / udp</td></tr>
+<tr><td>l</td><td>listening</td></tr>
+<tr><td>p</td><td>proceso dueño</td></tr>
+<tr><td>n</td><td>numérico (sin resolver)</td></tr>
+</table>
+</section>
+<!-- 3: wrappers -->
+<section>
+<h2>3 · TCP wrappers + sshd_config</h2>
+<div class="caja">/etc/hosts.allow:
+sshd: 192.168.1.0/24
+
+/etc/hosts.deny:
+ALL: ALL
+
+# primero allow, luego deny
+# solo daemons con libwrap (ldd | grep wrap)
+
+/etc/ssh/sshd_config:
+PermitRootLogin no
+PasswordAuthentication no
+AllowUsers murci</div>
+<p>Tras tocar sshd: <code>sshd -t</code> valida y
+<code>systemctl reload sshd</code> aplica.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 110.2 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Checklist ----------
+function todo(v) {
+  document.querySelectorAll(".hc").forEach(function (c) {
+    c.checked = v;
+  });
+  nota();
+}
+function nota() {
+  let all = document.querySelectorAll(".hc");
+  let c = document.querySelectorAll(".hc:checked").length;
+  let txt = "Cumples " + c + " / " + all.length + " medidas ";
+  if (c === all.length) { txt += "✔ host endurecido"; }
+  else if (c >= 5) { txt += "· aceptable, cierra el resto"; }
+  else { txt += "· vulnerable: aplica lo que falta"; }
+  txt += "\nRecuerda: lsof -i, lastb (fallidos), last (logins).";
+  document.getElementById("hn").textContent = txt;
+}
+// ---------- Lab ----------
+function lab(k) {
+  let m = {
+    ss: "ss -tulpn  →  sockets en escucha\nt=tcp u=udp l=listening p=proceso n=numérico\nEj: tcp 0.0.0.0:22 sshd → SSH abierto a todo.",
+    nmap: "nmap -sT localhost      →  TCP abiertos\nnmap -sU --top-ports 20 →  UDP principales\nSolo audita TUS equipos (si no, intrusión).",
+    wrap: "/etc/hosts.allow: sshd: 192.168.1.0/24\n/etc/hosts.deny:  ALL: ALL\nPrimero allow, luego deny. libwrap.",
+    lsof: "lsof -i :22   →  quién usa el 22\nlast       →  últimos logins\nlastb      →  intentos fallidos (¡mira botnets!)"
+  };
+  document.getElementById("lab").textContent = m[k];
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Dónde deben estar los hashes?", o: ["/etc/passwd", "/etc/shadow", "/etc/group"], c: 1,
+    e: "shadow 640, solo root." },
+  { q: "Comando que muestra sockets en escucha con proceso:", o: ["ss -tulpn", "ls -l", "ps aux"], c: 0,
+    e: "ss sustituye a netstat." },
+  { q: "Orden de TCP wrappers:", o: ["deny siempre primero", "allow se evalúa antes que deny", "son excluyentes"], c: 1,
+    e: "allow → deny; primera coincidencia gana." },
+  { q: "Para desactivar un servicio persistente:", o: ["kill", "systemctl disable --now nombre", "rm /etc/hosts"], c: 1,
+    e: "disable quita del arranque; --now lo para ya." },
+  { q: "¿Qué audita puertos de tu propio host?", o: ["nmap localhost", "telnet externo", "ping -f"], c: 0,
+    e: "nmap contra ti mismo para verificar ss/firewall." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Host blindado!" : n >= 3 ? "Bien" : "Repasa ss y wrappers");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

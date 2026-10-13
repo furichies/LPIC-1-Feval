@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.8 Editor vi · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+#screen {
+  background:#111;
+  color:#eee;
+  border-radius:10px;
+  padding:0;
+  overflow:hidden;
+  font-family:monospace;
+  border:3px solid var(--az)
+}
+
+#modebar {
+  display:flex;
+  justify-content:space-between;
+  background:var(--az);
+  color:#fff;
+  padding:6px 12px;
+  font-weight:700
+}
+
+#modebar b {
+  background:var(--am);
+  color:var(--az);
+  border-radius:6px;
+  padding:1px 10px
+}
+
+#buf {
+  padding:12px;
+  min-height:130px;
+  white-space:pre-wrap
+}
+
+#cmdline {
+  background:#000;
+  color:var(--am);
+  padding:8px 12px;
+  min-height:34px
+}
+
+.kbd {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(78px,1fr));
+  gap:8px;
+  margin-top:10px
+}
+
+.kbd button {
+  background:#eef3fa;
+  color:var(--az);
+  border:2px solid var(--az);
+  font-family:monospace
+}
+
+.grid2 {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+@media(max-width:700px) {
+  .grid2 {
+  grid-template-columns:1fr
+}
+
+}
+
+table {
+  width:100%;
+  border-collapse:collapse
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px
+}
+
+code {
+  background:#eef3fa;
+  padding:1px 6px;
+  border-radius:5px
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.8 Edición básica con vi</h1>
+<div><span class="badge">Objetivo 103.8</span><span class="badge">Peso 3</span><span class="badge">vi / vim</span></div>
+<p style="margin:8px 0 0">Tres modos: Normal · Insertar · Última línea. Texto de ejemplo propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Simulador de modos vi</h2>
+<p>Haz clic en teclas o escribe en tu teclado físico. Empiezas en <b>Normal</b>.</p>
+<div id="screen"><div id="modebar"><span>archivo: practica.txt</span><b id="mode">NORMAL</b></div><div id="buf">Servidor de la cooperativa
+-- pulsa i para escribir --
+Tercera línea de prueba</div><div id="cmdline">:</div></div>
+<div class="kbd">
+<button onclick="key('i')">i insertar</button><button onclick="key('a')">a añadir</button>
+<button onclick="key('x')">x borrar</button><button onclick="key('dd')">dd línea</button>
+<button onclick="key('yy')">yy copiar</button><button onclick="key('p')">p pegar</button>
+<button onclick="key('u')">u deshacer</button><button onclick="key('Escape')">Esc</button>
+<button onclick="key(':')">: línea</button><button onclick="key('Enter')">Enter ⏎</button>
+<button onclick="key('h')">h ←</button><button onclick="key('l')">l →</button>
+</div>
+<p style="font-size:.92rem">Atajos de última línea: escribe <code>:w</code> guardar · <code>:q</code> salir · <code>:wq</code> guardar+salir · <code>:q!</code> forzar salida · <code>:set nu</code> números.</p>
+</section>
+<section>
+<h2>2 · Chuleta mínima</h2>
+<div class="grid2">
+<div><table><tr><th>Modo Normal</th><th>Acción</th></tr>
+<tr><td><code>h j k l</code></td><td>mover cursor</td></tr>
+<tr><td><code>dd / yy / p</code></td><td>cortar/copiar/pegar</td></tr>
+<tr><td><code>u / Ctrl+r</code></td><td>deshacer / rehacer</td></tr>
+<tr><td><code>/texto</code></td><td>buscar hacia abajo</td></tr></table></div>
+<div><table><tr><th>Última línea</th><th>Acción</th></tr>
+<tr><td><code>:w :q :wq :q!</code></td><td>guardar / salir</td></tr>
+<tr><td><code>:30</code></td><td>ir a línea 30</td></tr>
+<tr><td><code>:%s/viejo/nuevo/g</code></td><td>sustituir todo</td></tr>
+<tr><td><code>:set nu!</code></td><td>mostrar números</td></tr></table></div>
+</div>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let mode='NORMAL', yank='', hist=[];
+const buf=document.getElementById('buf'), mEl=document.getElementById('mode'), cmd=document.getElementById('cmdline');
+function render(){mEl.textContent=mode==='LAST'?'ÚLTIMA LÍNEA':mode.toUpperCase();}
+function key(k){
+ if(mode==='NORMAL'){
+  if(k==='i'||k==='a'){mode='INSERT';buf.textContent+='\n[modo insertar: escribe con tu teclado, Esc para salir]';}
+  else if(k==='x'){let t=buf.textContent;buf.textContent=t.slice(0,120)+t.slice(121);hist.push('x');}
+  else if(k==='dd'){let L=buf.textContent.split('\n');yank=L.pop();buf.textContent=L.join('\n')||'(fichero vacío)';}
+  else if(k==='yy'){let L=buf.textContent.split('\n');yank=L[L.length-1];cmd.textContent=': // línea copiada: '+yank.slice(0,30);}
+  else if(k==='p'){buf.textContent+='\n'+(yank||'pegado');}
+  else if(k==='u'){cmd.textContent=': // deshecho (u)';}
+  else if(k===':'){mode='LAST';cmd.textContent=':';}
+  else if(k==='h'||k==='l'||k==='Escape'){cmd.textContent=': // cursor '+(k==='h'?'←':k==='l'?'→':'ya en Normal');}
+ }else if(mode==='INSERT'){
+  if(k==='Escape'){mode='NORMAL';cmd.textContent=': // vuelta a Normal';}
+  else buf.textContent+=k.length===1?'['+k+']':'';
+ }else if(mode==='LAST'){
+  if(k==='Enter'){exec(cmd.textContent);mode='NORMAL';}
+  else if(k==='Escape'){mode='NORMAL';cmd.textContent=':';}
+  else if(k.length===1)cmd.textContent+=k;
+  else if(k==='dd'||k==='yy')cmd.textContent+=k;
+ }
+ render();
+}
+function exec(c){
+ c=c.replace(/^:/,'').trim();
+ if(c==='w')cmd.textContent=': // “practica.txt” 3L escrito (simulado)';
+ else if(c==='q')cmd.textContent=': // salida OK (no hay cambios pendientes)';
+ else if(c==='wq')cmd.textContent=': // guardado y salido ✔';
+ else if(c==='q!')cmd.textContent=': // salida forzada, cambios descartados';
+ else if(c==='set nu')cmd.textContent=': // números de línea activados';
+ else cmd.textContent=': // orden “'+c+'” ejecutada (simulación)';
+}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape')key('Escape');
+ else if(mode==='INSERT'&&e.key.length===1&&!e.ctrlKey){buf.textContent+=e.key;e.preventDefault();}
+ else if(mode==='LAST'&&e.key.length===1){cmd.textContent+=e.key;}
+ else if(mode==='LAST'&&e.key==='Enter'){exec(cmd.textContent);mode='NORMAL';render();e.preventDefault();}
+ else if(mode==='LAST'&&e.key==='Backspace'){cmd.textContent=cmd.textContent.slice(0,-1);}
+ else if(mode==='NORMAL'&&['i','a','x','p','u',':','h','l'].includes(e.key))key(e.key);
+});
+const P=[
+{q:"¿En qué modo arranca vi?",o:["Insertar","Normal (comandos)","Última línea"],c:1},
+{q:"¿Cómo pasas de Insertar a Normal?",o:["Con :wq","Con Esc","Con Ctrl+q"],c:1},
+{q:"¿Qué hace dd en modo Normal?",o:["Borra la línea actual","Guarda el fichero","Pega"],c:0},
+{q:"¿Qué orden guarda y sale?",o:[":q!",":w",":wq"],c:2},
+{q:"¿Para qué sirve /texto en Normal?",o:["Sustituir","Buscar texto hacia adelante","Numerar líneas"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡Vi sin miedo!':s>=3?'Bien, practica Esc y :wq.':'Repite el simulador.');}
+render();
+</script>
+</body>
+</html>

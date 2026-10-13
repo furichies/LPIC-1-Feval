@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>105.2 Scripts simples · app_scripts</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px 4px 4px 0;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+textarea {
+  width: 100%;
+  min-height: 170px;
+  font-family: monospace;
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 10px;
+}
+.out {
+  background: #111;
+  color: #7CFC98;
+  border-radius: 8px;
+  padding: 10px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  min-height: 100px;
+  margin-top: 8px;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>105.2 Personalizar o escribir scripts simples <span class="peso">Peso 4 · v5.0</span></h1>
+<p>Objetivo: shebang, permisos +x, <code>if/for/while</code>, test <code>[ ]</code>,
+<code>$?</code>, <code>&amp;&amp;</code> / <code>||</code>, variables y argumentos.</p>
+</header>
+<main>
+<!-- 1: tester -->
+<section>
+<h2>1 · Mini-tester de sintaxis sh</h2>
+<p>Pega tu script o carga un caso. El analizador revisa shebang,
+cierres <code>fi/done/esac</code> y buenas prácticas:</p>
+<button onclick="caso('if')">Caso if</button>
+<button onclick="caso('for')">Caso for</button>
+<button onclick="caso('while')">Caso while</button>
+<button onclick="caso('chain')">Caso &amp;&amp; / ||</button>
+<button onclick="caso('case')">Caso case</button>
+<button class="sec" onclick="analizar()">Analizar</button>
+<label><input type="checkbox" id="px" checked> simular chmod +x</label>
+<textarea id="code">#!/bin/bash
+# ejemplo propio
+NOMBRE="murci"
+if [ -n "$NOMBRE" ]; then
+  echo "Hola $NOMBRE"
+fi</textarea>
+<div class="out" id="out">Pulsa Analizar…</div>
+</section>
+<!-- 2: $? -->
+<section>
+<h2>2 · Chuleta exprés: $? y encadenados</h2>
+<p><code>$?</code> guarda la salida del último comando (0 = éxito).
+<code>cmd1 &amp;&amp; cmd2</code> ejecuta cmd2 solo si cmd1 triunfa;
+<code>cmd1 || cmd2</code> solo si falla.</p>
+<button onclick="demo()">Simular $? en vivo</button>
+<button class="sec" onclick="tablaTest()">Tabla de test [ ]</button>
+<div class="out" id="demo">./script.sh → echo $? …</div>
+<table>
+<tr><th>Test</th><th>Significado</th></tr>
+<tr><td><code>[ -f f ]</code></td><td>f es fichero regular</td></tr>
+<tr><td><code>[ -d d ]</code></td><td>d es directorio</td></tr>
+<tr><td><code>[ -n "$v" ]</code></td><td>v no vacía</td></tr>
+<tr><td><code>[ "$a" = "$b" ]</code></td><td>cadenas iguales</td></tr>
+<tr><td><code>[ "$n" -gt 10 ]</code></td><td>comparación numérica</td></tr>
+</table>
+<p>Argumentos: <code>$0</code> nombre, <code>$1 $2…</code> parámetros,
+<code>$#</code> nº, <code>$@</code> todos. Cita siempre: <code>"$var"</code>.</p>
+</section>
+<!-- 3: permisos -->
+<section>
+<h2>3 · Permisos y ejecución</h2>
+<p>Un script necesita lectura + ejecución. Formas de lanzarlo:</p>
+<table>
+<tr><th>Orden</th><th>Requiere +x</th><th>Nota</th></tr>
+<tr><td><code>./script.sh</code></td><td>sí</td><td>usa su shebang</td></tr>
+<tr><td><code>bash script.sh</code></td><td>no</td><td>fuerza intérprete</td></tr>
+<tr><td><code>source script.sh</code></td><td>no</td><td>corre en la shell actual</td></tr>
+</table>
+<p>Debug: <code>bash -x script.sh</code> traza cada línea.
+<code>bash -n script.sh</code> solo chequea sintaxis sin ejecutar.</p>
+<div class="nota">Redacción propia con fines didácticos. Comprueba
+en tu distro con <code>ls -l</code> y <code>chmod +x</code>.</div>
+</section>
+<!-- 4: quiz -->
+<section class="quiz">
+<h2>4 · Quiz · shebang y permisos (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Casos ----------
+const casos = {
+  if: '#!/bin/bash\nn=$1\nif [ "$n" -gt 10 ]; then\n  echo "mayor"\nelse\n  echo "menor"\nfi\necho "salida: $?"',
+  for: '#!/bin/bash\nfor f in *.log; do\n  echo "procesando $f"\ndone',
+  while: '#!/bin/bash\nc=1\nwhile [ $c -le 3 ]; do\n  echo "vuelta $c"\n  c=$((c+1))\ndone',
+  chain: '#!/bin/bash\nmkdir -p ~/bin && cp script.sh ~/bin/ || echo "fallo copia"\ntest -x ~/bin/script.sh; echo $?',
+  case: '#!/bin/bash\ncase "$1" in\n  start) echo "arrancando";;\n  stop) echo "parando";;\n  *) echo "uso: $0 {start|stop}";;\nesac'
+};
+function caso(k) {
+  document.getElementById("code").value = casos[k];
+  analizar();
+}
+// ---------- Analizador ----------
+function analizar() {
+  let t = document.getElementById("code").value;
+  let l = t.split("\n");
+  let msg = [];
+  if (l[0].startsWith("#!")) {
+    msg.push("✔ shebang: " + l[0]);
+  } else {
+    msg.push("✘ falta shebang (ej. #!/bin/bash)");
+  }
+  let ifs = (t.match(/\bif\b/g) || []).length;
+  let fis = (t.match(/\bfi\b/g) || []).length;
+  if (ifs === fis) {
+    msg.push("✔ if/fi equilibrados (" + ifs + ")");
+  } else {
+    msg.push("✘ if (" + ifs + ") != fi (" + fis + ")");
+  }
+  let fors = (t.match(/\bfor\b/g) || []).length;
+  let wh = (t.match(/\bwhile\b/g) || []).length;
+  let don = (t.match(/\bdone\b/g) || []).length;
+  if ((fors + wh) === don) {
+    msg.push("✔ bucles cerrados con done");
+  } else {
+    msg.push("✘ for/while (" + (fors + wh) + ") != done (" + don + ")");
+  }
+  let cs = (t.match(/\bcase\b/g) || []).length;
+  let es = (t.match(/\besac\b/g) || []).length;
+  if (cs === es) {
+    msg.push("✔ case/esac equilibrados");
+  } else {
+    msg.push("✘ case (" + cs + ") != esac (" + es + ")");
+  }
+  if (/\$\?|&&|\|\|/.test(t)) {
+    msg.push("✔ usa control de estado ($? / && / ||)");
+  } else {
+    msg.push("· consejo: controla errores con $? o &&/||");
+  }
+  if (/"\$/.test(t) || /\$@/.test(t)) {
+    msg.push("✔ variables citadas");
+  } else {
+    msg.push("· consejo: cita \"$var\" para evitar word splitting");
+  }
+  if (document.getElementById("px").checked) {
+    msg.push("✔ permiso +x: ./script.sh ejecutable");
+  } else {
+    msg.push("· sin +x: lánzalo con: bash script.sh");
+  }
+  document.getElementById("out").textContent = msg.join("\n");
+}
+// ---------- Demo $? ----------
+function demo() {
+  let e = Math.random() > 0.5 ? 0 : 1;
+  let txt = "comando simulado → exit " + e + "\n";
+  txt += "echo $?  →  " + e + "\n";
+  if (e === 0) {
+    txt += "como fue 0, '&&' sí ejecutaría lo siguiente";
+  } else {
+    txt += "como fue " + e + ", '||' ejecutaría la alternativa";
+  }
+  document.getElementById("demo").textContent = txt;
+}
+function tablaTest() {
+  document.getElementById("demo").textContent =
+    "[ -e f ] existe · [ -x f ] ejecutable · [ -z \"$v\" ] vacía\n" +
+    "[ n1 -eq n2 ] igual · [ n1 -lt n2 ] menor · [ str1 != str2 ] distintas";
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "Primera línea correcta de un script bash:", o: ["#bin/bash", "#!/bin/bash", "!--/bin/bash"], c: 1,
+    e: "Shebang: #! + ruta del intérprete." },
+  { q: "¿Cómo se vuelve ejecutable?", o: ["chmod +x script.sh", "touch +x script.sh", "export script.sh"], c: 0,
+    e: "chmod +x da permiso de ejecución." },
+  { q: "¿Qué contiene $? justo tras ls /noexiste?", o: ["0", "distinto de 0", "el PID"], c: 1,
+    e: "Fallo → código distinto de cero." },
+  { q: "mkdir d && cd d significa…", o: ["cd siempre", "cd solo si mkdir ok", "son excluyentes"], c: 1,
+    e: "&& encadena solo si hay éxito." },
+  { q: "¿Cómo se cierra un bloque if en sh?", o: ["end", "fi", "done"], c: 1,
+    e: "if…then…else…fi; bucles con done." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Script ninja!" : n >= 3 ? "Aprobado, repasa permisos" : "Relee shebang y test [ ]");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+analizar();
+</script>
+</body>
+</html>

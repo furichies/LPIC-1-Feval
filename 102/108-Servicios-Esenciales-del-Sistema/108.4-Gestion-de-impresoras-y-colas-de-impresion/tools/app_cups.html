@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>108.4 CUPS e impresión · LPIC-1 v5.0</title>
+<style>
+:root{--azul:#002855;--amar:#FDB913;--bg:#f4f6fa;--card:#fff}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#1c2733}
+header{background:var(--azul);color:#fff;padding:18px;border-bottom:6px solid var(--amar)}
+header h1{margin:0;font-size:1.25rem}.badge{display:inline-block;background:var(--amar);color:var(--azul);font-weight:700;border-radius:20px;padding:2px 12px;margin-top:8px;font-size:.85rem}
+main{max-width:960px;margin:0 auto;padding:16px}
+section{background:var(--card);border-radius:10px;padding:16px;margin:14px 0;box-shadow:0 2px 8px rgba(0,40,85,.12)}
+h2{color:var(--azul);border-left:6px solid var(--amar);padding-left:10px;font-size:1.1rem}
+code{background:#0d1b2e;color:#ffd75e;padding:2px 6px;border-radius:5px;font-size:.85rem}
+table{width:100%;border-collapse:collapse;font-size:.88rem;margin-top:10px}
+th{background:var(--azul);color:#fff;padding:8px}td{border:1px solid #c6d2e4;padding:8px}
+tr:nth-child(even) td{background:#f2f6fc}
+button{cursor:pointer;border:2px solid var(--azul);background:#fff;color:var(--azul);border-radius:8px;padding:8px 14px;font-weight:700;margin:4px}
+button:hover{background:var(--azul);color:var(--amar)}
+input,select{padding:8px;border-radius:6px;border:1px solid #888;margin:4px 0}
+.cola{background:#10233f;color:#d9ffd2;border-radius:8px;padding:12px;font-family:monospace;font-size:.88rem;min-height:90px;white-space:pre-wrap}
+.q{border:1px solid #c6d2e4;border-radius:8px;padding:10px;margin:8px 0}.q p{font-weight:700;margin:0 0 6px}
+label{display:block;margin:4px 0;font-size:.92rem}#nota{font-weight:800;color:var(--azul)}
+footer{text-align:center;font-size:.82rem;color:#555;padding:16px}
+</style>
+</head>
+<body>
+<header>
+<h1>108.4 Gestión de impresoras y colas (CUPS)</h1>
+<p>Objetivo 108.4 · Lección: CUPS, colas y comandos de impresión · <strong>Peso v5.0: 2</strong></p>
+<span class="badge">CUPS :631 · lp · lpq · lprm · cancel</span>
+</header>
+<main>
+<section>
+<h2>1 · CUPS de un vistazo</h2>
+<p>CUPS es el sistema de impresión de Linux. Se administra por web en <code>http://localhost:631</code> y con comandos. Fichero clave: <code>/etc/cups/printers.conf</code>. Demonio: <code>cupsd</code>.</p>
+<table>
+<tr><th>Comando</th><th>Hace</th><th>Ejemplo</th></tr>
+<tr><td><b>lp / lpr</b></td><td>Envía trabajo a la cola</td><td><code>lp -d taller informe.pdf</code></td></tr>
+<tr><td><b>lpq / lpstat</b></td><td>Muestra la cola</td><td><code>lpq -a / lpstat -t</code></td></tr>
+<tr><td><b>lprm / cancel</b></td><td>Borra trabajos</td><td><code>cancel taller-12 / lprm -P taller 12</code></td></tr>
+<tr><td><b>lpadmin</b></td><td>Crea/gestiona colas</td><td><code>lpadmin -p taller -E -v usb:/dev/usb/lp0</code></td></tr>
+<tr><td><b>cupsaccept / cupsreject</b></td><td>Acepta o rechaza trabajos</td><td><code>cupsreject taller</code></td></tr>
+<tr><td><b>cupsenable / cupsdisable</b></td><td>Arranca o para la impresora</td><td><code>cupsdisable taller</code></td></tr>
+</table>
+</section>
+<section>
+<h2>2 · Simulador de cola de impresión</h2>
+<p>Añade trabajos, avanza la impresión y cancela: igual que harías con <code>lp / lpq / cancel</code>.</p>
+<input id="doc" placeholder="documento.pdf" size="18">
+<select id="prio"><option>normal</option><option>urgente</option></select>
+<button onclick="add()">lp (añadir)</button>
+<button onclick="next()">Imprimir siguiente</button>
+<button onclick="clearQ()">cancel -a (vaciar)</button>
+<div class="cola" id="cola">Cola «taller» vacía. lpstat: sin trabajos.</div>
+<p style="font-size:.88rem">Equivalencia: añadir = <code>lp -d taller</code> · ver = <code>lpq</code> · borrar uno = <code>cancel id</code>.</p>
+<p style="font-size:.88rem">
+<b>Truco de examen:</b> <code>lpstat -t</code> lo resume todo
+(cola, impresora, trabajos y destino por defecto).
+</p>
+<p style="font-size:.88rem">
+Si la cola existe pero no imprime, mira en este orden:
+<code>cupsdisable</code> (¿parada?),
+<code>cupsreject</code> (¿rechaza?),
+cable/red y nivel de tinta o papel.
+</p>
+<p style="font-size:.88rem">
+Los trabajos urgentes del simulador saltan al frente,
+igual que haría un operario con <code>lp -q 100</code> (prioridad alta).
+</p>
+</section>
+<section>
+<h2>3 · Alta de impresora con lpadmin, paso a paso</h2>
+<p>
+Despliega cada paso en orden: es el procedimiento que evalúa el examen.
+</p>
+<details open>
+<summary><b>Paso 1 · Arranca y habilita CUPS</b></summary>
+<p>
+<code>systemctl enable --now cups</code>
+</p>
+<p>
+Comprueba: <code>systemctl status cups</code>.
+</p>
+<p>
+Sin el demonio <code>cupsd</code> no hay colas ni web en el 631.
+</p>
+<p>
+Abre <code>http://localhost:631</code> para la administración web.
+</p>
+</details>
+<details>
+<summary><b>Paso 2 · Crea la cola con lpadmin</b></summary>
+<p>
+<code>lpadmin -p taller -E -v usb:/dev/usb/lp0 -m everywhere</code>
+</p>
+<p>
+<code>-p</code> nombra la cola, <code>-E</code> la habilita,
+<code>-v</code> indica el dispositivo y <code>-m</code> el modelo/driver.
+</p>
+<p>
+En red: <code>-v ipp://192.168.1.20/ipp/print</code>.
+</p>
+<p>
+<code>-m everywhere</code> usa driverless IPP cuando la impresora lo soporta.
+</p>
+</details>
+<details>
+<summary><b>Paso 3 · Ponla por defecto (opcional)</b></summary>
+<p>
+<code>lpadmin -d taller</code> la deja como destino por defecto.
+</p>
+<p>
+Así <code>lp fichero.pdf</code> imprime ahí sin <code>-d</code>.
+</p>
+<p>
+Verifica con <code>lpstat -d</code>.
+</p>
+</details>
+<details>
+<summary><b>Paso 4 · Controla aceptación y estado</b></summary>
+<p>
+<code>cupsaccept taller</code> / <code>cupsreject taller</code>
+</p>
+<p>
+Aceptar = entran trabajos; rechazar = se deniegan con mensaje.
+</p>
+<p>
+<code>cupsenable taller</code> / <code>cupsdisable taller</code>
+</p>
+<p>
+Habilitada = imprime; deshabilitada = retiene la cola.
+</p>
+<p>
+Estado global rápido: <code>lpstat -t</code>.
+</p>
+</details>
+<details>
+<summary><b>Paso 5 · Imprime y limpia</b></summary>
+<p>
+<code>lp -d taller informe.pdf</code>
+</p>
+<p>
+<code>lp -d taller -n 2 -o sides=two-sided-long-edge doc.pdf</code>
+</p>
+<p>
+Dos copias a doble cara: ejemplo de opciones <code>-o</code>.
+</p>
+<p>
+<code>lpq -P taller</code> muestra esa cola concreta.
+</p>
+<p>
+<code>cancel -a taller</code> borra todos sus trabajos.
+</p>
+</details>
+</section>
+<section>
+<h2>4 · Quiz · 5 preguntas</h2>
+<div class="q"><p>1. Puerto web de administración de CUPS:</p>
+<label><input type="radio" name="q1" value="1"> 631</label>
+<label><input type="radio" name="q1" value="0"> 515</label>
+<label><input type="radio" name="q1" value="0"> 3389</label></div>
+<div class="q"><p>2. ¿Qué comando envía un fichero a imprimir?</p>
+<label><input type="radio" name="q2" value="0"> lpq</label>
+<label><input type="radio" name="q2" value="1"> lp (o lpr)</label>
+<label><input type="radio" name="q2" value="0"> cancel</label></div>
+<div class="q"><p>3. Para ver todas las colas y su estado usarías…</p>
+<label><input type="radio" name="q3" value="1"> lpstat -t</label>
+<label><input type="radio" name="q3" value="0"> lpadmin -x</label>
+<label><input type="radio" name="q3" value="0"> netstat -tulpn</label></div>
+<div class="q"><p>4. Borrar el trabajo 7 de la impresora taller:</p>
+<label><input type="radio" name="q4" value="0"> lp -d taller 7</label>
+<label><input type="radio" name="q4" value="1"> cancel taller-7</label>
+<label><input type="radio" name="q4" value="0"> cupsaccept taller-7</label></div>
+<div class="q"><p>5. Impedir que una cola acepte más trabajos:</p>
+<label><input type="radio" name="q5" value="1"> cupsreject taller</label>
+<label><input type="radio" name="q5" value="0"> cupsenable taller</label>
+<label><input type="radio" name="q5" value="0"> lp taller</label></div>
+<button onclick="corregir()">Corregir quiz</button>
+<p id="nota"></p><div id="fallos"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let jobs=[],id=1;
+function paint(){const c=document.getElementById('cola');
+if(!jobs.length){c.textContent="Cola «taller» vacía. lpstat: sin trabajos.";return}
+c.textContent=jobs.map((j,i)=>(i===0?"▶ imprimiendo ":"• en espera  ")+j).join("\n");}
+function add(){const d=document.getElementById('doc').value.trim()||("doc"+id+".pdf");
+const p=document.getElementById('prio').value;const j="taller-"+(id++)+" "+d+" ["+p+"]";
+if(p==="urgente")jobs.unshift(j);else jobs.push(j);paint();}
+function next(){if(!jobs.length){alert("Cola vacía: nada que imprimir.");return}
+alert("Impreso: "+jobs.shift());paint();}
+function clearQ(){jobs=[];paint();}
+function corregir(){let n=0,f=[];for(let i=1;i<=5;i++){const s=document.querySelector('input[name=q'+i+']:checked');
+if(s&&s.value==="1")n++;else f.push(i);}
+document.getElementById('nota').textContent="Nota: "+n+" / 5"+(n===5?" ¡Cola dominada!":"");
+document.getElementById('fallos').innerHTML=f.length?"Revisa: "+f.join(", "):"Sin fallos.";}
+</script>
+</body>
+</html>

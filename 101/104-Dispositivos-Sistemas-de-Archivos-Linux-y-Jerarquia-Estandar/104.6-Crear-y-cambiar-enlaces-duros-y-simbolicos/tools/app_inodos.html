@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>104.6 Enlaces e Inodos · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.stage {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px
+}
+@media(max-width:700px) {
+  .stage {
+  grid-template-columns:1fr
+}
+
+}
+
+.inode {
+  background:#0b1e3a;
+  color:#fff;
+  border-radius:12px;
+  padding:14px;
+  text-align:center
+}
+
+.inode .n {
+  font-size:2rem;
+  font-weight:900;
+  color:var(--am)
+}
+
+.names {
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:10px
+}
+
+.name {
+  background:#fff;
+  color:#111;
+  border-radius:8px;
+  padding:8px;
+  font-family:monospace;
+  border:2px dashed var(--am)
+}
+
+.name.hard {
+  border-style:solid;
+  border-color:#1a7f37
+}
+
+.link {
+  font-size:1.4rem
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+pre {
+  background:#0b1e3a;
+  color:#8ef0a4;
+  border-radius:10px;
+  padding:12px;
+  min-height:100px;
+  overflow:auto
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 104.6 Enlaces duros y simbólicos</h1>
+<div><span class="badge">Objetivo 104.6</span><span class="badge">Peso 2</span><span class="badge">ln · inodos</span></div>
+<p style="margin:8px 0 0">Un inodo, varios nombres: visualízalo. Contenido propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Visualizador de inodos</h2>
+<div class="stage">
+<div class="inode"><div>INODO</div><div class="n" id="ino">101</div><div id="cnt">enlaces: 1</div><div class="names" id="hard"><div class="name hard">📄 informe.txt</div></div>
+<div><button class="sec" onclick="addHard()">+ ln (duro)</button><button class="sec" onclick="rmHard()">− borrar nombre</button></div></div>
+<div class="inode" style="background:#3a2b00"><div>ENLACE SIMBÓLICO (otro inodo)</div><div class="n" id="ino2">205 → 101</div><div>solo apunta por ruta</div><div class="names" id="soft"></div>
+<div><button class="sec" onclick="addSoft()">+ ln -s</button><button class="sec" onclick="rmSoft()">− borrar</button></div></div>
+</div>
+<pre id="t">$ ln informe.txt copia.txt  → mismo inodo, contador +1
+$ ln -s /ruta/informe.txt atajo.txt  → inodo nuevo que apunta</pre>
+</section>
+<section>
+<h2>2 · Duro vs simbólico + experimento rm</h2>
+<table><tr><th></th><th>Duro (ln)</th><th>Simbólico (ln -s)</th></tr>
+<tr><td>Inodo</td><td>Mismo</td><td>Distinto</td></tr>
+<tr><td>Cruza FS / a dirs</td><td>No / no*</td><td>Sí / sí</td></tr>
+<tr><td>Si borro original</td><td>Sigue accesible</td><td>Roto (dangling)</td></tr>
+<tr><td>Ver</td><td colspan="2"><code>ls -i · stat · find -samefile</code></td></tr></table>
+<div><button onclick="exp('duro')">Borrar original (caso duro)</button><button onclick="exp('blando')">Borrar original (caso symlink)</button></div>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let h=1,s=0;
+function paint(){
+ document.getElementById('cnt').textContent='enlaces: '+h;
+ document.getElementById('ino2').textContent=s?'205 → 101 ('+s+' symlinks)':'205 → 101';
+}
+function addHard(){h++;const d=document.createElement('div');d.className='name hard';d.textContent='📄 copia'+h+'.txt (mismo inodo 101)';document.getElementById('hard').appendChild(d);paint();log('$ ln informe.txt copia'+h+'.txt\ncontador='+h+'. ls -l muestra 2º campo = '+h+'.');}
+function rmHard(){const box=document.getElementById('hard');if(box.children.length>1){box.removeChild(box.lastChild);h--;paint();log('$ rm copia…\ncontador='+h+'. El dato sobrevive mientras quede ≥1 nombre.');}else log('⚠ Queda el último nombre; si lo borras se libera el inodo.');}
+function addSoft(){s++;const d=document.createElement('div');d.className='name';d.textContent='🔗 atajo'+s+'.txt → informe.txt';document.getElementById('soft').appendChild(d);paint();log('$ ln -s informe.txt atajo'+s+'.txt\nls -l: lrwxrwxrwx … atajo → informe.txt');}
+function rmSoft(){const box=document.getElementById('soft');if(box.children.length){box.removeChild(box.lastChild);s--;paint();log('$ rm atajo… (el original no se toca)');}else log('⚠ No hay symlinks que borrar.');}
+function log(m){document.getElementById('t').textContent=m;}
+function exp(c){log(c==='duro'?'$ rm informe.txt (teniendo copia dura)\n→ copia.txt sigue abriendo el contenido: el inodo vive (enlaces≥1).':'$ rm informe.txt (teniendo solo symlink)\n→ atajo.txt queda rojo/parpadeante: “No such file”. readlink muestra destino roto.');}
+const P=[
+{q:"¿Qué comparten dos hard links?",o:["El inodo y los datos","Solo el nombre","El sistema de ficheros"],c:0},
+{q:"¿Qué comando crea un simbólico?",o:["ln -s origen enlace","ln origen enlace","cp -s"],c:0},
+{q:"¿Puede un hard link cruzar particiones?",o:["Sí siempre","No","Solo a directorios"],c:1},
+{q:"¿Cómo ves el nº de inodo?",o:["ls -i / stat","df -h","du -sh"],c:0},
+{q:"Si borras el original de un symlink…",o:["Se borra todo","El symlink queda roto","Se convierte en duro"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Inodos claros!':n>=3?'Bien, repasa el contador.':'Relee duro vs simbólico.');}
+paint();
+</script>
+</body>
+</html>

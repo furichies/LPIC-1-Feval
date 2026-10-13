@@ -1,0 +1,16 @@
+# 📝 prev-quest 102 — Ejercicios previos por objetivo
+
+- [ ] 105.1 entorno (`env`, `alias`, orden de perfiles en VM)
+- [ ] 105.2 scripts (shebang + `chmod +x`, `$?`, `&&/||`)
+- [ ] 106.1 X11 (`echo $DISPLAY`, `xauth list` — sin `xhost +`)
+- [ ] 106.2 escritorios (KDE/GNOME/Xfce + VNC/RDP/Spice/XDMCP tabla)
+- [ ] 106.3 accesibilidad (tabla de tecnologías)
+- [ ] 107.1 usuarios (`useradd` en VM + `chage -l`, `getent`)
+- [ ] 107.2 cron/at (`crontab -l`, `atq`, `systemctl list-timers`)
+- [ ] 107.3 locale (`locale`, `timedatectl`, `localectl`)
+- [ ] 108.1 NTP (`timedatectl`, `chronyc sources`)
+- [ ] 108.2 logs (`journalctl -b -p err`, `logger -p`)
+- [ ] 108.3 MTA (`/etc/aliases`, `~/.forward`, `mailq`)
+- [ ] 108.4 CUPS (`lpstat -t`, `lpq`)
+- [ ] 109.1–109.4 redes (`ip`, `ss`, `dig`, `nmcli` show)
+- [ ] 110.1–110.3 seguridad (`find -perm -4000` en VM, `sudo -l`, `ssh -v localhost`, `gpg --list-keys`)

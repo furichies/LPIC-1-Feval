@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.6 nice / renice · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px 4px 4px 0
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+input[type=range] {
+  width:100%
+}
+input,select {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem
+}
+
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:110px;
+  white-space:pre-wrap
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+.scale {
+  height:18px;
+  background:linear-gradient(90deg,#1a7f37,#FDB913,#b3261e);
+  border-radius:10px;
+  position:relative;
+  margin:10px 0
+}
+
+.pin {
+  position:absolute;
+  top:-6px;
+  width:6px;
+  height:30px;
+  background:var(--az);
+  border:2px solid #fff;
+  border-radius:3px
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:.9rem
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:6px
+}
+td {
+  border:1px solid #c9d2e0;
+  padding:6px;
+  font-family:monospace
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px
+}
+
+.card {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.6 Prioridades nice / renice</h1>
+<div><span class="badge">Objetivo 103.6</span><span class="badge">Peso 2</span><span class="badge">Examen 101-500</span></div>
+<p style="margin:8px 0 0">Escala -20…19 · nice · renice · top/ps · Material didáctico propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · La escala de amabilidad</h2>
+<p><b>nice -20</b> = máxima prioridad (egoísta), <b>nice +19</b> = mínima (amable). Por defecto todo nace con <b>0</b>. Solo <b>root</b> puede <b>bajar</b> el nice (dar más CPU).</p>
+<div class="scale" id="sc"><div class="pin" id="pin" style="left:51%"></div></div>
+<label><b>Nice a lanzar / aplicar: <span id="nv">0</span></b></label>
+<input type="range" id="rg" min="-20" max="19" value="0" oninput="mover()">
+<div class="grid">
+<div class="card"><b>Lanzar con nice</b><br><code>nice -n <span id="n1">0</span> backup.sh</code><br>
+<button onclick="run('nice')">Simular nice</button></div>
+<div class="card"><b>Cambiar en caliente</b><br><code>renice -n <span id="n2">0</span> -p 1234</code><br>
+<label><input type="checkbox" id="root" style="width:auto"> Soy root</label><br>
+<button onclick="run('renice')">Simular renice</button></div>
+</div>
+<pre id="o1">$ Mueve el deslizador y simula…</pre>
+<div class="expl" id="e1">Recuerda: <b>subir</b> el número = <b>ceder</b> CPU (cualquiera puede). <b>Bajarlo</b> = pedir más CPU (solo root).</div>
+</section>
+<section>
+<h2>2 · Simulador top / ps</h2>
+<p><b>top</b> ordena con <b>P</b> (%CPU) y <b>M</b> (%MEM); dentro puedes pulsar <b>r</b> (renice) y <b>k</b> (kill). <b>ps -o pid,ni,comm</b> muestra la columna NI.</p>
+<button onclick="toplab('top')">top (orden CPU)</button>
+<button onclick="toplab('ps')">ps -eo pid,ni,comm</button>
+<button onclick="toplab('renice')">renice +5 al PID 77</button>
+<button class="sec" onclick="toplab('reset')">Reiniciar</button>
+<table id="tab"><tr><th>PID</th><th>NI</th><th>%CPU</th><th>CMD</th></tr></table>
+<pre id="o2">$ _</pre>
+<div class="expl"><b>nice</b> solo al lanzar; <b>renice</b> a proceso vivo (por PID, usuario <b>-u</b> o grupo <b>-g</b>). Sintaxis moderna: <b>renice -n 5 -p PID</b>.</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+let PS=[{p:12,ni:0,cpu:42,c:'ffmpeg'},{p:77,ni:0,cpu:35,c:'compila'},{p:90,ni:10,cpu:8,c:'backup'},{p:101,ni:-5,cpu:60,c:'db'}];
+function mover(){const v=+document.getElementById('rg').value;document.getElementById('nv').textContent=v;
+document.getElementById('n1').textContent=v;document.getElementById('n2').textContent=v;
+document.getElementById('pin').style.left=((v+20)/39*100)+'%';}
+function run(k){const v=+document.getElementById('rg').value,p=document.getElementById('o1'),e=document.getElementById('e1');
+if(k==='nice'){p.textContent='$ nice -n '+v+' ./backup.sh\nproceso nace con NI='+v+(v<0?' ← pedir más prioridad: requiere root (en real fallaría sin sudo)':' ← cualquiera puede ceder CPU');e.innerHTML='<b>nice -n '+v+'</b> lanza con esa amabilidad. Rango válido <b>-20…19</b>.';}
+else{const r=document.getElementById('root').checked;
+if(v<0&&!r){p.textContent='$ renice -n '+v+' -p 1234\nrenice: failed to set priority: Permission denied ← solo root baja el nice';e.innerHTML='Sin root solo puedes <b>subir</b> el nice (valores más altos). Activa “Soy root” para bajarlo.';}
+else p.textContent='$ renice -n '+v+' -p 1234\n1234 (process id) old priority 0, new priority '+v+' ← '+(r?'como root todo vale':'cediendo CPU, permitido'),
+e.innerHTML='Sintaxis examen: <b>renice -n '+v+' -p PID</b> · <b>-u user</b> todos sus procesos · <b>-g grupo</b>.';}}
+function draw(){document.getElementById('tab').innerHTML='<tr><th>PID</th><th>NI</th><th>%CPU</th><th>CMD</th></tr>'+PS.map(x=>'<tr><td>'+x.p+'</td><td>'+x.ni+'</td><td>'+x.cpu+'</td><td>'+x.c+'</td></tr>').join('');}
+function toplab(m){const p=document.getElementById('o2');draw();
+if(m==='top')p.textContent='$ top  [pulsa P=CPU M=MEM r=renice k=kill]\nPID 101 (NI -5) arriba: más prioridad → más %CPU.';
+if(m==='ps')p.textContent='$ ps -eo pid,ni,comm --sort=-pcpu\nNI visible en columna NI; -l muestra PRI/NICE.';
+if(m==='renice'){let t=PS.find(x=>x.p===77);t.ni=5;t.cpu=12;draw();p.textContent='$ renice -n 5 -p 77\n77 old 0 new 5 → su %CPU cae del 35% al 12% (cede turno).';}
+if(m==='reset'){PS=[{p:12,ni:0,cpu:42,c:'ffmpeg'},{p:77,ni:0,cpu:35,c:'compila'},{p:90,ni:10,cpu:8,c:'backup'},{p:101,ni:-5,cpu:60,c:'db'}];draw();p.textContent='$ _';}}
+draw();
+const P=[
+
+{q:"Rango nice y valor por defecto:",o:["-20…19, defecto 0","0…99, defecto 50","-10…10, defecto 5"],c:0},
+
+{q:"nice -n 15 ./app.sh hace…",o:["La lanza muy prioritaria","La lanza cediendo CPU (poca prioridad)","La mata"],c:1},
+
+{q:"¿Quién puede poner nice -10 (bajar)?",o:["Cualquiera","Solo root","Nadie"],c:1},
+
+{q:"Cambiar prioridad de un proceso vivo:",o:["nice","renice -n N -p PID","top sin más"],c:1},
+
+{q:"En top, tecla para renice:",o:["k","r","M"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Prioridades dominadas!':n>=3?'Bien, repasa quién baja nice.':'Relee la escala.');}
+</script>
+</body>
+</html>

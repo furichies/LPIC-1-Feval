@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>109.1 Redes y CIDR · app_redes</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+input {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+  margin: 3px;
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  min-height: 110px;
+}
+.caja b {
+  color: var(--amar);
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 6px;
+  font-size: 0.85rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>109.1 Fundamentos de protocolos de Internet <span class="peso">Peso 4 · v5.0</span></h1>
+<p>Objetivo: IPv4/IPv6, CIDR y subredes, TCP frente a UDP/ICMP y puertos esenciales.</p>
+</header>
+<main>
+<!-- 1: CIDR -->
+<section>
+<h2>1 · Calculadora CIDR / subredes</h2>
+<p>
+IP <input id="ip" value="192.168.5.130" size="14"> /
+<input id="cidr" value="24" size="3" type="number" min="8" max="30">
+<button onclick="cidr()">Calcular</button>
+</p>
+<button class="sec" onclick="ejemplo('10.0.3.200',16)">10.0.0.0/16</button>
+<button class="sec" onclick="ejemplo('172.16.8.70',26)">172.16.8.64/26</button>
+<button class="sec" onclick="ejemplo('192.168.1.200',28)">/28 pequeña</button>
+<div class="caja" id="co">…</div>
+<table>
+<tr><th>CIDR</th><th>Máscara</th><th>Hosts</th></tr>
+<tr><td>/24</td><td>255.255.255.0</td><td>254</td></tr>
+<tr><td>/26</td><td>255.255.255.192</td><td>62</td></tr>
+<tr><td>/28</td><td>255.255.255.240</td><td>14</td></tr>
+<tr><td>/16</td><td>255.255.0.0</td><td>65534</td></tr>
+</table>
+<div class="nota">Privadas (RFC 1918): <code>10/8</code>,
+<code>172.16/12</code>, <code>192.168/16</code>. Loopback
+<code>127/8</code>. Enlace-local <code>169.254/16</code>.</div>
+</section>
+<!-- 2: puertos -->
+<section>
+<h2>2 · Tabla de puertos TCP/UDP (filtra)</h2>
+<input id="f" placeholder="filtra: ssh, 80, udp…" oninput="filtra()" style="width:220px">
+<table id="t"><tr><th>Puerto</th><th>Servicio</th><th>Proto</th></tr></table>
+<p>TCP = fiable con conexión (web, ssh, correo).
+UDP = rápido sin conexión (DNS, DHCP, VoIP).
+ICMP = control (<code>ping</code>, <code>traceroute</code>).</p>
+</section>
+<!-- 3: TCP vs UDP -->
+<section>
+<h2>3 · TCP frente a UDP de un vistazo</h2>
+<table>
+<tr><th></th><th>TCP</th><th>UDP</th></tr>
+<tr><td>Conexión</th><td>sí (3-way handshake)</td><td>no</td></tr>
+<tr><td>Orden / reintento</th><td>sí</td><td>no (lo pone la app)</td></tr>
+<tr><td>Ejemplos</td><td>22, 80, 443, 25</td><td>53, 67/68, 69, 123</td></tr>
+<tr><td>Cabecera</th><td>20+ bytes</td><td>8 bytes</td></tr>
+</table>
+<p>IPv6 abrevia ceros: <code>2001:db8::1</code>. Loopback
+<code>::1</code>. No hay broadcast: usa multicast.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 109.1 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- CIDR ----------
+function ip2n(ip) {
+  return ip.split(".").reduce(function (a, o) {
+    return a * 256 + +o;
+  }, 0) >>> 0;
+}
+function n2ip(n) {
+  return [24, 16, 8, 0].map(function (s) {
+    return (n >>> s) & 255;
+  }).join(".");
+}
+function ejemplo(ip, c) {
+  document.getElementById("ip").value = ip;
+  document.getElementById("cidr").value = c;
+  cidr();
+}
+function cidr() {
+  let ip = document.getElementById("ip").value.trim();
+  let c = +document.getElementById("cidr").value;
+  if (!/^(\d+\.){3}\d+$/.test(ip) || c < 8 || c > 30) {
+    document.getElementById("co").textContent = "IP o CIDR no válidos (usa 8-30).";
+    return;
+  }
+  let mask = (c === 0 ? 0 : (0xFFFFFFFF << (32 - c)) >>> 0);
+  let n = ip2n(ip);
+  let net = n & mask;
+  let bro = net | (~mask >>> 0);
+  let hosts = c >= 31 ? 0 : (bro - net - 1);
+  let txt = "IP:       " + ip + "/" + c + "\n";
+  txt += "Máscara:  " + n2ip(mask) + "\n";
+  txt += "Red:      " + n2ip(net) + "\n";
+  txt += "Broadcast:" + n2ip(bro) + "\n";
+  txt += "Rango:    " + n2ip(net + 1) + " – " + n2ip(bro - 1) + "\n";
+  txt += "Hosts:    " + hosts + "  (" + Math.pow(2, 32 - c) + " dir. - red - bcast)";
+  document.getElementById("co").textContent = txt;
+}
+cidr();
+// ---------- Puertos ----------
+const puertos = [
+  [20, "FTP datos", "TCP"], [21, "FTP control", "TCP"],
+  [22, "SSH", "TCP"], [23, "Telnet", "TCP"],
+  [25, "SMTP", "TCP"], [53, "DNS", "TCP+UDP"],
+  [67, "DHCP servidor", "UDP"], [68, "DHCP cliente", "UDP"],
+  [69, "TFTP", "UDP"], [80, "HTTP", "TCP"],
+  [110, "POP3", "TCP"], [143, "IMAP", "TCP"],
+  [443, "HTTPS", "TCP"], [993, "IMAPS", "TCP"],
+  [3389, "RDP", "TCP"], [123, "NTP", "UDP"]
+];
+function filtra() {
+  let f = (document.getElementById("f").value || "").toLowerCase();
+  let t = document.getElementById("t");
+  let filas = puertos.filter(function (p) {
+    return (p[0] + p[1] + p[2]).toLowerCase().includes(f);
+  });
+  t.innerHTML = "<tr><th>Puerto</th><th>Servicio</th><th>Proto</th></tr>" +
+    filas.map(function (p) {
+      return "<tr><td>" + p[0] + "</td><td>" + p[1] + "</td><td>" + p[2] + "</td></tr>";
+    }).join("");
+}
+filtra();
+// ---------- Quiz ----------
+const preg = [
+  { q: "¿Cuántos hosts útiles tiene una /24?", o: ["256", "254", "24"], c: 1,
+    e: "2^8 − red − broadcast = 254." },
+  { q: "Broadcast de 192.168.1.0/24:", o: ["192.168.1.0", "192.168.1.255", "192.168.0.255"], c: 1,
+    e: "Última dirección del bloque." },
+  { q: "DNS usa…", o: ["solo TCP", "UDP (y TCP en respuestas grandes)", "solo ICMP"], c: 1,
+    e: "UDP 53; TCP si >512B o zona." },
+  { q: "Puerto de SSH:", o: ["22", "23", "25"], c: 0,
+    e: "22 TCP. 23=telnet, 25=smtp." },
+  { q: "Protocolo sin conexión y sin reintentos:", o: ["TCP", "UDP", "HTTP"], c: 1,
+    e: "UDP: rápido, sin garantías." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Subred master!" : n >= 3 ? "Bien" : "Practica con la calculadora");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

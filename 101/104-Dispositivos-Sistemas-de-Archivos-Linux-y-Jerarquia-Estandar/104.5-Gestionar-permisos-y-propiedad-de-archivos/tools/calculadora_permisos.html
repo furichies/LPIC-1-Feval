@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>104.5 Permisos y umask · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa;
+  --ok:#1a7f37
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px
+}
+@media(max-width:700px) {
+  .grid {
+  grid-template-columns:1fr
+}
+
+}
+
+.perm {
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin:8px 0
+}
+
+.perm fieldset {
+  border:2px solid var(--az);
+  border-radius:10px
+}
+
+.pv {
+  font-size:2rem;
+  font-family:monospace;
+  background:#0b1e3a;
+  color:var(--am);
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  margin-top:8px
+}
+
+input[type=text],input[type=number] {
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-family:monospace
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+pre {
+  background:#0b1e3a;
+  color:#8ef0a4;
+  border-radius:10px;
+  padding:12px;
+  min-height:90px;
+  overflow:auto
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+table {
+  width:100%;
+  border-collapse:collapse
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 104.5 Permisos, propiedad y umask</h1>
+<div><span class="badge">Objetivo 104.5</span><span class="badge">Peso 3</span><span class="badge">chmod · chown · SUID/SGID/sticky</span></div>
+<p style="margin:8px 0 0">De rwx a octal con bits especiales. Ejemplos propios.</p>
+</header>
+<main>
+<section>
+<h2>1 · Calculadora octal ↔ simbólico</h2>
+<div class="grid">
+<div>
+<div class="perm">
+<fieldset><legend><b>u</b></legend><label><input type="checkbox" id="u4" checked onchange="calc('c')"> r(4)</label><br><label><input type="checkbox" id="u2" checked onchange="calc('c')"> w(2)</label><br><label><input type="checkbox" id="u1" checked onchange="calc('c')"> x(1)</label></fieldset>
+<fieldset><legend><b>g</b></legend><label><input type="checkbox" id="g4" checked onchange="calc('c')"> r</label><br><label><input type="checkbox" id="g2" onchange="calc('c')"> w</label><br><label><input type="checkbox" id="g1" checked onchange="calc('c')"> x</label></fieldset>
+<fieldset><legend><b>o</b></legend><label><input type="checkbox" id="o4" checked onchange="calc('c')"> r</label><br><label><input type="checkbox" id="o2" onchange="calc('c')"> w</label><br><label><input type="checkbox" id="o1" onchange="calc('c')"> x</label></fieldset>
+</div>
+<fieldset style="border:2px solid var(--az);border-radius:10px"><legend><b>Especiales</b></legend>
+<label><input type="checkbox" id="suid" onchange="calc('c')"> SUID (4)</label>
+<label><input type="checkbox" id="sgid" onchange="calc('c')"> SGID (2)</label>
+<label><input type="checkbox" id="sticky" onchange="calc('c')"> Sticky (1)</label></fieldset>
+<div class="pv" id="pv">755 · rwxr-xr-x</div>
+</div>
+<div>
+<label>Octal → simbólico: <input type="text" id="oct" value="2750" maxlength="4"></label>
+<button onclick="calc('o')">Convertir octal</button>
+<pre id="t">$ chmod 755 informe.txt  →  rwxr-xr-x
+Marca casillas o escribe un octal.</pre>
+<table><tr><th>Bit</th><th>Efecto</th><th>Ejemplo</th></tr>
+<tr><td>SUID 4</td><td>Ejecuta como dueño</td><td>-rwsr-xr-x passwd</td></tr>
+<tr><td>SGID 2</td><td>Ejecuta como grupo / herencia en dirs</td><td>drwxrws--- taller</td></tr>
+<tr><td>Sticky 1</td><td>Solo dueño borra</td><td>drwxrwxrwt /tmp</td></tr></table>
+</div>
+</div>
+</section>
+<section>
+<h2>2 · Laboratorio umask + propiedad</h2>
+<p>Ficheros: <code>666 − umask</code> · Directorios: <code>777 − umask</code> (resta con matiz de bits).</p>
+<label>umask: <input type="text" id="um" value="022" style="max-width:120px"></label>
+<button onclick="umask()">Calcular creación</button>
+<button class="sec" onclick="chown()">Simular chown/chgrp</button>
+<pre id="t2">$ umask 022 → fichero 644, directorio 755</pre>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+function bits(p){return (document.getElementById(p+'4').checked?4:0)+(document.getElementById(p+'2').checked?2:0)+(document.getElementById(p+'1').checked?1:0);}
+function sym(v){return (v&4?'r':'-')+(v&2?'w':'-')+(v&1?'x':'-');}
+function calc(m){
+ if(m==='o'){
+  let o=document.getElementById('oct').value.replace(/[^0-7]/g,'').padStart(3,'0');
+  if(o.length===4){document.getElementById('suid').checked=+o[0]&4;document.getElementById('sgid').checked=+o[0]&2;document.getElementById('sticky').checked=+o[0]&1;o=o.slice(1);}
+  const u=+o[0],g=+o[1],x=+o[2];
+  [['u',u],['g',g],['o',x]].forEach(([p,v])=>{document.getElementById(p+'4').checked=v&4;document.getElementById(p+'2').checked=v&2;document.getElementById(p+'1').checked=v&1;});
+ }
+ const u=bits('u'),g=bits('g'),o=bits('o');
+ const sp=(document.getElementById('suid').checked?4:0)+(document.getElementById('sgid').checked?2:0)+(document.getElementById('sticky').checked?1:0);
+ let s=sym(u)+sym(g)+sym(o);
+ if(document.getElementById('suid').checked)s=s.slice(0,2)+(u&1?'s':'S')+s.slice(3);
+ if(document.getElementById('sgid').checked)s=s.slice(0,5)+(g&1?'s':'S')+s.slice(6);
+ if(document.getElementById('sticky').checked)s=s.slice(0,8)+(o&1?'t':'T');
+ const oct=(sp?sp:'')+''+u+g+o;
+ document.getElementById('pv').textContent=oct+' · '+s;
+ document.getElementById('oct').value=oct;
+ document.getElementById('t').textContent='$ chmod '+oct+' archivo  →  '+s+'\n'+(sp?'Bits especiales activos ('+sp+'): revisa SUID/SGID/sticky.':'Permisos base 3 dígitos.');
+}
+function umask(){
+ let u=document.getElementById('um').value.replace(/[^0-7]/g,'').padStart(3,'0');
+ const f=[6,6,6].map((b,i)=>b&~+u[i]), d=[7,7,7].map((b,i)=>b&~+u[i]);
+ document.getElementById('t2').textContent='$ umask '+u+'\n→ fichero nuevo: '+f.join('')+' ('+f.map(sym).join('').match(/.{3}/g).join(' ')+')\n→ directorio nuevo: '+d.join('')+'\nPrueba 027 → 640 / 750 (grupo taller sin “otros”).';
+}
+function chown(){document.getElementById('t2').textContent='$ chown ana:ventas informe.txt\n$ chgrp ventas /srv/taller\n$ chmod 2770 /srv/taller  (SGID: lo nuevo hereda grupo ventas)';}
+const P=[
+{q:"¿Qué significa rwxr-x--- en octal?",o:["750","640","777"],c:0},
+{q:"¿Qué hace chmod 4755 programa?",o:["Sticky","SUID: ejecuta como dueño","Solo lectura"],c:1},
+{q:"¿Qué efecto tiene SGID en un directorio?",o:["Ninguno","Lo nuevo hereda el grupo del dir","Borra el grupo"],c:1},
+{q:"Con umask 022, ¿permiso de fichero nuevo?",o:["644","666","755"],c:0},
+{q:"¿Qué directorio clásico lleva sticky?",o:["/tmp (1777)","/root","/boot"],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡Permisos clavados!':s>=3?'Bien, repasa SUID/sticky.':'Practica con la calculadora.');}
+calc('c');
+</script>
+</body>
+</html>

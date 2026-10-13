@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>104.7 FHS y Búsqueda · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:980px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+.fhs {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(100px,1fr));
+  gap:8px;
+  margin:10px 0
+}
+
+.fhs button {
+  background:#eef3fa;
+  color:var(--az);
+  border:2px solid var(--az);
+  border-radius:10px;
+  font-family:monospace;
+  font-weight:800;
+  font-size:1.05rem
+}
+
+.fhs button.act {
+  background:var(--az);
+  color:var(--am)
+}
+
+#info {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  min-height:70px
+}
+
+pre {
+  background:#0b1e3a;
+  color:#8ef0a4;
+  border-radius:10px;
+  padding:12px;
+  min-height:110px;
+  overflow:auto
+}
+
+input,select {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-family:monospace
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px
+}
+
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px
+}
+th {
+  background:var(--az);
+  color:#fff;
+  padding:7px
+}
+td {
+  border:1px solid #c6cfdd;
+  padding:7px
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 104.7 FHS y localización de archivos</h1>
+<div><span class="badge">Objetivo 104.7</span><span class="badge">Peso 2</span><span class="badge">FHS · find · which</span></div>
+<p style="margin:8px 0 0">Dónde va cada cosa y cómo encontrarla. Ejemplos propios.</p>
+</header>
+<main>
+<section>
+<h2>1 · Explorador FHS clicable</h2>
+<p>Toca cada directorio para ver qué guarda según la jerarquía estándar:</p>
+<div class="fhs" id="fhs">
+<button onclick="ver('/',this)">/</button><button onclick="ver('/bin',this)">/bin</button>
+<button onclick="ver('/sbin',this)">/sbin</button><button onclick="ver('/etc',this)">/etc</button>
+<button onclick="ver('/home',this)">/home</button><button onclick="ver('/var',this)">/var</button>
+<button onclick="ver('/tmp',this)">/tmp</button><button onclick="ver('/usr',this)">/usr</button>
+<button onclick="ver('/opt',this)">/opt</button><button onclick="ver('/boot',this)">/boot</button>
+<button onclick="ver('/dev',this)">/dev</button><button onclick="ver('/proc',this)">/proc</button>
+</div>
+<div id="info">Pulsa un directorio…</div>
+</section>
+<section>
+<h2>2 · Laboratorio find / locate / which</h2>
+<table><tr><th>Comando</th><th>Usa</th><th>Ejemplo</th></tr>
+<tr><td><code>find</code></td><td>Búsqueda viva por nombre, tamaño, tiempo</td><td><code>find /etc -name "*.conf"</code></td></tr>
+<tr><td><code>locate</code></td><td>Base updatedb (rapidísima)</td><td><code>locate sshd_config</code></td></tr>
+<tr><td><code>which / whereis</code></td><td>Binario en $PATH / bin+man+fuente</td><td><code>which python3</code></td></tr>
+<tr><td><code>type</code></td><td>Alias, builtin o fichero</td><td><code>type ls</code></td></tr></table>
+<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+<input id="bus" value="*.conf" style="flex:1;min-width:140px">
+<select id="cmd"><option value="find">find /etc -name</option><option value="locate">locate</option><option value="which">which</option><option value="whereis">whereis</option></select>
+<button onclick="buscar()">Buscar (simulado)</button>
+</div>
+<pre id="t">$ …</pre>
+</section>
+<section>
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const D={'/':'Raíz: punto de partida. Solo subdirectorios estándar, nada de “mis cosas” aquí.','/bin':'Binarios esenciales de usuario (ls, cp, cat). En sistemas modernos → enlace a /usr/bin.','/sbin':'Binarios de administración (fdisk, mkfs, reboot). Solo root en PATH clásico.','/etc':'Configuración del sistema (sshd_config, fstab, passwd). Solo texto editable.','/home':'Casas de usuarias/os (/home/ana). Datos personales, no del sistema.','/var':'Datos variables: logs (/var/log), spool, cachés, mail. Crece con el uso.','/tmp':'Temporales borrables (sticky 1777). Se puede vaciar al arrancar.','/usr':'Jerarquía secundaria: apps, libs, man (/usr/bin, /usr/share).','/opt':'Software añadido de terceros (paquetes monolíticos).','/boot':'Núcleo, initramfs y GRUB. Poco espacio, no tocar sin saber.','/dev':'Dispositivos (sda, null, tty). Los crea udev, no se editan.','/proc':'Vista virtual del kernel y procesos (meminfo, cpuinfo).'};
+function ver(d,b){document.querySelectorAll('#fhs button').forEach(x=>x.classList.remove('act'));b.classList.add('act');document.getElementById('info').innerHTML='<b>'+d+'</b> — '+D[d];}
+function buscar(){const q=document.getElementById('bus').value,c=document.getElementById('cmd').value,t=document.getElementById('t');
+ if(c==='find')t.textContent='$ find /etc -name "'+q+'"\n/etc/ssh/sshd_config\n/etc/hosts.conf\n[find recorre el disco en vivo; -mtime -7 = modificados última semana; -size +10M]';
+ if(c==='locate')t.textContent='$ locate '+q+'\n/etc/ssh/sshd_config\n…(instantáneo vía updatedb; recuerda updatedb para refrescar)';
+ if(c==='which')t.textContent='$ which '+q+'\n/usr/bin/'+q+'  ← el que se ejecutaría según $PATH';
+ if(c==='whereis')t.textContent='$ whereis '+q+'\n'+q+': /usr/bin/'+q+' /etc/'+q+' /usr/share/man/man1/'+q+'.1.gz';}
+const P=[
+{q:"¿Dónde están las configuraciones?",o:["/etc","/var","/opt"],c:0},
+{q:"¿Dónde crecen los logs?",o:["/boot","/var/log","/dev"],c:1},
+{q:"¿Qué hace updatedb?",o:["Actualiza la BD de locate","Borra temporales","Monta discos"],c:0},
+{q:"¿Qué muestra which python3?",o:["Todo: bin+man+fuente","El binario que se ejecutaría en $PATH","Alias internos"],c:1},
+{q:"Encuentra ficheros >100M modificados hace <7 días",o:['find / -size +100M -mtime -7','locate -7 -100M','whereis -size 100M'],c:0}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let s=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)s++;});document.getElementById('nota').textContent='Nota: '+s+' / 5 '+(s===5?'★ ¡Explorador FHS!':s>=3?'Bien, repasa /var vs /etc.':'Relee el explorador.');}
+</script>
+</body>
+</html>

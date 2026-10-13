@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>108.3 Correo MTA · app_correo</title>
+<style>
+:root {
+  --azul: #002855;
+  --amar: #FDB913;
+  --bg: #f4f6fa;
+  --ok: #1a7f37;
+  --bad: #b42318;
+}
+* {
+  box-sizing: border-box;
+  font-family: System-ui, Segoe UI, Arial, sans-serif;
+}
+body {
+  margin: 0;
+  background: var(--bg);
+  color: #1c2430;
+  line-height: 1.5;
+}
+header {
+  background: var(--azul);
+  color: #fff;
+  padding: 20px 24px;
+  border-bottom: 6px solid var(--amar);
+}
+header h1 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+header p {
+  margin: 8px 0 0;
+  font-size: 0.92rem;
+}
+.peso {
+  display: inline-block;
+  background: var(--amar);
+  color: var(--azul);
+  font-weight: 800;
+  border-radius: 20px;
+  padding: 2px 12px;
+  margin-left: 8px;
+  font-size: 0.85rem;
+}
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 18px;
+}
+section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 14px 0;
+  box-shadow: 0 2px 8px rgba(0, 40, 85, 0.12);
+  border-top: 4px solid var(--azul);
+}
+section h2 {
+  color: var(--azul);
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+button {
+  background: var(--azul);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+  margin: 4px;
+}
+button.sec {
+  background: #fff;
+  color: var(--azul);
+  border: 2px solid var(--azul);
+}
+button:hover {
+  filter: brightness(1.15);
+}
+.cadena {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 10px 0;
+}
+.nodo {
+  flex: 1;
+  min-width: 130px;
+  background: #eef3fa;
+  border: 2px solid var(--azul);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  cursor: pointer;
+}
+.nodo b {
+  color: var(--azul);
+  display: block;
+}
+.nodo.on {
+  background: var(--amar);
+}
+.caja {
+  background: #0b1f3a;
+  color: #d7e3f4;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: monospace;
+  min-height: 90px;
+  white-space: pre-wrap;
+}
+.caja b {
+  color: var(--amar);
+}
+input {
+  padding: 7px;
+  border-radius: 6px;
+  border: 1px solid #9fb0c7;
+}
+.quiz label {
+  display: block;
+  background: #f2f5fa;
+  border-radius: 8px;
+  padding: 8px;
+  margin: 6px 0;
+  cursor: pointer;
+}
+.quiz label:hover {
+  background: #e8eef7;
+}
+footer {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #5a6b85;
+  padding: 18px;
+  border-top: 4px solid var(--amar);
+  margin-top: 20px;
+}
+code {
+  background: #eef2f7;
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-top: 8px;
+}
+td, th {
+  border: 1px solid #b9c6dc;
+  padding: 7px;
+  font-size: 0.88rem;
+}
+th {
+  background: var(--azul);
+  color: #fff;
+}
+.nota {
+  background: #fff8df;
+  border: 2px solid var(--amar);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+<header>
+<h1>108.3 Conceptos básicos del MTA <span class="peso">Peso 3 · v5.0</span></h1>
+<p>Objetivo: cadena <code>MUA → MSA/MTA → MDA → buzón</code>,
+<code>aliases</code>/<code>.forward</code>, mbox frente a Maildir.</p>
+</header>
+<main>
+<!-- 1: cadena -->
+<section>
+<h2>1 · La cadena del correo (toca cada eslabón)</h2>
+<div class="cadena">
+<div class="nodo" onclick="eslabon(0,this)"><b>MUA ✉️</b><small>Thunderbird / mutt: redacta</small></div>
+<div class="nodo" onclick="eslabon(1,this)"><b>MTA 🚚</b><small>postfix/exim: enruta SMTP :25</small></div>
+<div class="nodo" onclick="eslabon(2,this)"><b>MDA 📥</b><small>procmail: entrega local</small></div>
+<div class="nodo" onclick="eslabon(3,this)"><b>Buzón 📦</b><small>mbox o Maildir</small></div>
+<div class="nodo" onclick="eslabon(4,this)"><b>POP/IMAP 📬</b><small>dovecot: lectura</small></div>
+</div>
+<div class="caja" id="e">Toca un eslabón…</div>
+<table>
+<tr><th>Puerto</th><th>Uso</th></tr>
+<tr><td>25 SMTP</td><td>entre MTAs</td></tr>
+<tr><td>587 submission</td><td>tu MUA envía autenticado</td></tr>
+<tr><td>110 POP3 / 143 IMAP</td><td>lectura (mejor con TLS)</td></tr>
+</table>
+</section>
+<!-- 2: aliases -->
+<section>
+<h2>2 · Aliases, forward y mbox vs Maildir</h2>
+<p>Alias <input id="al" value="root: murci" size="18">
+<button onclick="alias()">Explicar aliases</button>
+<button class="sec" onclick="cola()">Cola de correo</button></p>
+<div class="caja" id="ao">/etc/aliases + newaliases …</div>
+<table>
+<tr><th></th><th>mbox</th><th>Maildir</th></tr>
+<tr><td>Formato</td><td>un solo fichero <code>/var/spool/mail/user</code></td><td>un fichero por mensaje <code>~/Maildir/{new,cur,tmp}</code></td></tr>
+<tr><td>Bloqueos</td><td>sí necesita</td><td>no necesita</td></tr>
+<tr><td>Ideal</td><td>simple local</td><td>IMAP concurrente</td></tr>
+</table>
+<div class="nota"><code>~/.forward</code> con <code>otro@mail.com</code>
+reenvía tu correo personal sin ser root.</div>
+</section>
+<!-- 3: comandos -->
+<section>
+<h2>3 · Comandos de examen</h2>
+<table>
+<tr><th>Orden</th><th>Hace</th></tr>
+<tr><td><code>newaliases</code></td><td>recompila /etc/aliases</td></tr>
+<tr><td><code>mailq / postqueue -p</code></td><td>ver cola postfix</td></tr>
+<tr><td><code>postfix flush</code></td><td>reintentar cola</td></tr>
+<tr><td><code>mail -s asunto dest</code></td><td>enviar prueba</td></tr>
+</table>
+<p>MTA típicos: <code>postfix</code>, <code>exim</code>, <code>sendmail</code>.
+El MSA autentica tu envío en el 587; el MTA ruteará por registros MX.</p>
+</section>
+<!-- quiz -->
+<section class="quiz">
+<h2>4 · Quiz · 108.3 (5)</h2>
+<div id="q"></div>
+<button onclick="corrige()">Corregir</button>
+<div id="r" style="font-weight:700;margin-top:8px"></div>
+<div class="nota" id="exp"></div>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+// ---------- Eslabones ----------
+const E = [
+  "MUA: tu cliente. Habla SMTP(587) para enviar y POP3/IMAP para leer. Ej: Thunderbird, mutt, mail.",
+  "MTA: el cartero entre servidores (postfix, exim, sendmail). SMTP 25, reenvía según MX. Tras cambiar aliases ejecuta newaliases.",
+  "MDA: entrega local al buzón (procmail, maildrop, lda de dovecot). Aplica filtros y cuotas.",
+  "Buzón: destino final. mbox = 1 fichero; Maildir = 1 fichero/mensaje. En /var/spool/mail o ~/Maildir.",
+  "POP/IMAP: Dovecot sirve el buzón para leerlo. POP descarga y borra; IMAP sincroniza carpetas."
+];
+function eslabon(i, el) {
+  document.querySelectorAll(".nodo").forEach(function (n) {
+    n.classList.remove("on");
+  });
+  el.classList.add("on");
+  document.getElementById("e").textContent = E[i];
+}
+function alias() {
+  let v = document.getElementById("al").value;
+  let txt = "/etc/aliases: «" + v + "» → el correo de root llega a murci.\n";
+  txt += "Pasos: editar /etc/aliases → newaliases → systemctl reload postfix\n";
+  txt += "~/.forward hace lo mismo a nivel usuario.";
+  document.getElementById("ao").textContent = txt;
+}
+function cola() {
+  document.getElementById("ao").textContent =
+    "mailq  →  muestra diferidos (4xx reintenta, 5xx rebota)\n" +
+    "postqueue -f  →  forzar reintento\n" +
+    "logs en /var/log/maillog (Red Hat) o /var/log/mail.log (Debian)";
+}
+// ---------- Quiz ----------
+const preg = [
+  { q: "Orden correcto del flujo:", o: ["MDA→MTA→MUA", "MUA→MTA→MDA→buzón", "MTA→MUA→MDA"], c: 1,
+    e: "Redactas, se enruta, se entrega, se lee." },
+  { q: "Tras editar /etc/aliases hay que ejecutar…", o: ["newaliases", "postmap -q", "mailq"], c: 0,
+    e: "newaliases recompila la base." },
+  { q: "¿Qué hace ~/.forward?", o: ["filtra spam", "reenvía el correo del usuario", "configura SMTP"], c: 1,
+    e: "Un mail por línea de destino." },
+  { q: "Ventaja de Maildir sobre mbox:", o: ["un solo fichero", "un fichero por mensaje, sin bloqueos", "usa menos disco siempre"], c: 1,
+    e: "new/cur/tmp por mensaje." },
+  { q: "Puerto clásico SMTP entre MTAs:", o: ["143", "25", "110"], c: 1,
+    e: "25 entre servidores; 587 para clientes." }
+];
+let h = "";
+preg.forEach(function (p, i) {
+  h += "<p><b>" + (i + 1) + ". " + p.q + "</b></p>";
+  p.o.forEach(function (o, j) {
+    h += "<label><input type='radio' name='q" + i + "' value='" + j + "'> " + o + "</label>";
+  });
+});
+document.getElementById("q").innerHTML = h;
+function corrige() {
+  let n = 0, det = "";
+  preg.forEach(function (p, i) {
+    let s = document.querySelector("input[name=q" + i + "]:checked");
+    let ok = s && +s.value === p.c;
+    if (ok) { n++; }
+    det += (ok ? "✔" : "✘") + " " + (i + 1) + ": " + p.e + "<br>";
+  });
+  let r = document.getElementById("r");
+  r.textContent = "Aciertos: " + n + " / 5 · " +
+    (n === 5 ? "¡Correo certificado!" : n >= 3 ? "Bien" : "Repasa la cadena MUA→MTA→MDA");
+  r.style.color = n >= 3 ? "var(--ok)" : "var(--bad)";
+  document.getElementById("exp").innerHTML = det;
+}
+</script>
+</body>
+</html>

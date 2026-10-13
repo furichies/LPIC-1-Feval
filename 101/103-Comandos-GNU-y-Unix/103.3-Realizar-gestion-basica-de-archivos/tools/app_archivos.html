@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>103.3 Gestión de archivos · LPIC-1 v5.0</title>
+<style>
+
+:root {
+  --az:#002855;
+  --am:#FDB913;
+  --bg:#f4f6fa
+}
+
+* {
+  box-sizing:border-box
+}
+body {
+  margin:0;
+  font-family:system-ui,Arial,sans-serif;
+  background:var(--bg);
+  color:#1c2430
+}
+
+header {
+  background:var(--az);
+  color:#fff;
+  padding:18px;
+  border-bottom:6px solid var(--am)
+}
+
+header h1 {
+  margin:0;
+  font-size:1.35rem
+}
+header h1 span {
+  color:var(--am)
+}
+
+.badge {
+  display:inline-block;
+  background:var(--am);
+  color:var(--az);
+  font-weight:700;
+  border-radius:20px;
+  padding:2px 12px;
+  margin:4px 6px 0 0;
+  font-size:.85rem
+}
+
+main {
+  max-width:960px;
+  margin:auto;
+  padding:16px
+}
+
+section {
+  background:#fff;
+  border-radius:12px;
+  padding:16px;
+  margin:14px 0;
+  border:1px solid #d5dce6;
+  border-top:5px solid var(--az)
+}
+
+h2 {
+  color:var(--az);
+  margin-top:0
+}
+
+button {
+  background:var(--az);
+  color:#fff;
+  border:0;
+  border-radius:8px;
+  padding:9px 14px;
+  font-weight:700;
+  cursor:pointer;
+  margin:4px 4px 4px 0
+}
+
+button:hover {
+  background:#013a7a
+}
+.sec {
+  background:var(--am);
+  color:var(--az)
+}
+
+input,select {
+  padding:8px;
+  border-radius:8px;
+  border:1px solid #99a5b8;
+  font-size:1rem;
+  width:100%;
+  margin:4px 0
+}
+
+pre {
+  background:#0b1e3a;
+  color:#7CFC98;
+  border-radius:10px;
+  padding:12px;
+  overflow:auto;
+  min-height:100px;
+  white-space:pre-wrap
+}
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:10px
+}
+
+.card {
+  background:#eef3fa;
+  border:2px solid var(--az);
+  border-radius:10px;
+  padding:10px
+}
+
+.quiz label {
+  display:block;
+  background:#f1f4f9;
+  border-radius:8px;
+  padding:8px;
+  margin:6px 0;
+  cursor:pointer
+}
+
+.expl {
+  background:#fff8dd;
+  border-left:6px solid var(--am);
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px
+}
+
+footer {
+  text-align:center;
+  padding:16px;
+  color:#fff;
+  background:var(--az);
+  border-top:6px solid var(--am)
+}
+
+code {
+  background:#e8edf5;
+  padding:1px 6px;
+  border-radius:6px
+}
+
+
+</style>
+</head>
+<body>
+<header>
+<h1><span>LPIC-1 v5.0</span> · 103.3 Gestión básica de archivos</h1>
+<div><span class="badge">Objetivo 103.3</span><span class="badge">Peso 4</span><span class="badge">Examen 101-500</span></div>
+<p style="margin:8px 0 0">Globs · find · tar/cpio/dd · gzip/bzip2/xz · Material didáctico propio.</p>
+</header>
+<main>
+<section>
+<h2>1 · Globs y find (simulador)</h2>
+<p>El <b>glob</b> lo expande el shell antes de ejecutar. <b>find</b> busca en disco con criterios y <b>-exec</b>.</p>
+<div class="grid">
+<div class="card"><b>Probador de globs</b>
+<select id="g"><option value="*">* todo</option><option value="*.log">*.log</option><option value="foto?.jpg">foto?.jpg (? = 1 char)</option><option value="[a-c]*">[a-c]* rango</option><option value="**/*.conf">**/*.conf recursivo*</option></select>
+<button onclick="glob()">Expandir glob</button><pre id="o1">$ _</pre></div>
+<div class="card"><b>Constructor find</b>
+<select id="fc"><option value="-name '*.log'">-name '*.log'</option><option value="-size +100M">-size +100M</option><option value="-mtime -7">-mtime -7 (modif. &lt;7d)</option><option value="-type f -empty">-type f -empty</option></select>
+<select id="fa"><option value="">(sin acción: listar)</option><option value="-delete">-delete</option><option value="-exec chmod 644 {} ;">-exec chmod 644 {} \;</option><option value="-exec rm {} +">-exec rm {} +</option></select>
+<button onclick="findb()">Montar find</button><pre id="o2">$ _</pre></div>
+</div>
+<div class="expl" id="e1"><b>*</b> = todo, <b>?</b> = un carácter, <b>[abc]</b> = uno del grupo, <b>{a,b}</b> = expansión llaves. <b>**</b> recursivo requiere <code>shopt -s globstar</code>.</div>
+</section>
+<section>
+<h2>2 · tar / cpio / dd y compresores</h2>
+<div class="grid">
+<div class="card"><b>tar y compresores</b>
+<select id="tc"><option value="tar czf copia.tgz /etc/nginx">tar czf (gzip)</option><option value="tar cjf copia.tbz2 docs/">tar cjf (bzip2)</option><option value="tar cJf copia.txz src/">tar cJf (xz)</option><option value="tar tzf copia.tgz">tar tzf (listar)</option><option value="tar xzf copia.tgz -C /tmp">tar xzf (extraer)</option></select>
+<button onclick="tarc()">Explicar</button><pre id="o3">$ _</pre></div>
+<div class="card"><b>cpio / dd / file</b>
+<button onclick="demo('cpio')">cpio -o/-i</button>
+<button onclick="demo('dd')">dd clonado</button>
+<button onclick="demo('file')">file + gzip -k</button><pre id="o4">$ _</pre></div>
+</div>
+<div class="expl"><b>gzip</b> rápido (.gz), <b>bzip2</b> medio (.bz2), <b>xz</b> comprime más y lento (.xz). <b>-k</b> conserva el original. <b>zcat/xzcat/bzcat</b> leen sin descomprimir. <b>dd</b> clona a bajo nivel: ¡revisa <b>of=</b> dos veces!</div>
+</section>
+<section class="quiz">
+<h2>3 · Quiz · 5 preguntas</h2>
+<div id="q"></div>
+<button onclick="corregir()">Corregir quiz</button>
+<button class="sec" onclick="location.reload()">Reintentar</button>
+<p id="nota" style="font-weight:800"></p>
+</section>
+</main>
+<footer>Material propio (no oficial) · LPIC-1 v5.0</footer>
+<script>
+const F=['nota.txt','app.log','error.log','foto1.jpg','foto2.jpg','foto10.jpg','abril.conf','manual.pdf','backup.tgz'];
+function glob(){const g=document.getElementById('g').value;let r=[],x='';
+if(g==='*')r=F;else if(g==='*.log')r=F.filter(f=>f.endsWith('.log'));
+else if(g==='foto?.jpg')r=F.filter(f=>/^foto.$/.test(f.replace('.jpg',''))&&f.endsWith('.jpg'));
+else if(g==='[a-c]*')r=F.filter(f=>/[a-c]/.test(f[0]));
+else{r=['etc/nginx/nginx.conf','etc/ssh/sshd_config','docs/app.conf'];x=' (con globstar activado)';}
+document.getElementById('o1').textContent='$ ls '+g+x+'\n'+r.join('\n')+'\n['+r.length+' coincidencias expandidas por el shell]';
+document.getElementById('e1').innerHTML='El shell expande <b>'+g+'</b> antes de lanzar el comando. Entrecomillado (<b>"*.log"</b>) evita la expansión: obligatorio con <b>find -name</b>.';}
+function findb(){const c=document.getElementById('fc').value,a=document.getElementById('fa').value;
+let ex='find /datos '+c+' '+a,av='';if(c.includes('size'))av='Busca mayores de 100 MB: libera con -exec rm o -delete (¡antes lista sin acción!).';
+else if(c.includes('mtime'))av='Modificados hace menos de 7 días. -mtime +30 = hace más de 30 días.';else if(c.includes('empty'))av='Ficheros vacíos. -type d busca directorios.';
+else av='-name entre comillas para que no lo expanda el shell.';if(a.includes('{} +'))av+=' Con <b>+</b> agrupa args (rápido); con <b>\\;</b> ejecuta uno a uno.';
+document.getElementById('o2').textContent='$ '+ex+'\n'+av;}
+function tarc(){const v=document.getElementById('tc').value,p=document.getElementById('o3');const M={
+'tar czf copia.tgz /etc/nginx':'c=crear z=gzip f=fichero. Comprime al vuelo. Extrae con xzf.',
+'tar cjf copia.tbz2 docs/':'j=bzip2. Mejor ratio que gzip, más lento.',
+'tar cJf copia.txz src/':'J=xz. Máxima compresión, ideal para distribuir.',
+'tar tzf copia.tgz':'t=listar (test). -v verboso. Revisa antes de extraer.',
+'tar xzf copia.tgz -C /tmp':'x=extraer, -C destino. Con -p conserva permisos.'};p.textContent='$ '+v+'\n'+M[v];}
+function demo(t){const p=document.getElementById('o4');
+if(t==='cpio')p.textContent='$ find . -name "*.conf" | cpio -o > copia.cpio\n$ cpio -i < copia.cpio ← -o crea, -i extrae; lee lista por stdin';
+if(t==='dd')p.textContent='$ dd if=/dev/sda of=/backup/disco.img bs=4M status=progress\n512000 bloques ← clon bit a bit. ¡of= equivocado destruye datos!';
+if(t==='file')p.textContent='$ file foto.jpg\nJPEG image data\n$ gzip -k access.log ← -k conserva original; gunzip revierte';}
+const P=[
+
+{q:"Diferencia * y ? en globs:",o:["* = 0+ chars, ? = exactamente 1","Iguales","? = recursivo"],c:0},
+
+{q:"find / -name '*.log' lleva comillas porque…",o:["Es obligatorio sintáctico","Evita que el shell expanda el * antes","Acelera la búsqueda"],c:1},
+
+{q:"Para listar un .tgz sin extraer:",o:["tar xzf","tar tzf","tar cjf"],c:1},
+
+{q:"Mayor compresión (más lento):",o:["gzip","bzip2","xz"],c:2},
+
+{q:"dd if=/dev/sda of=… hace…",o:["Copia ficheros con cp","Clonado bloque a bloque a bajo nivel","Lista el disco"],c:1}];
+const box=document.getElementById('q');
+P.forEach((p,i)=>{let d=document.createElement('div');d.innerHTML='<p><b>'+(i+1)+'. '+p.q+'</b></p>'+p.o.map((o,j)=>'<label><input type="radio" name="p'+i+'" value="'+j+'"> '+o+'</label>').join('');box.appendChild(d);});
+function corregir(){let n=0;P.forEach((p,i)=>{const v=document.querySelector('input[name=p'+i+']:checked');if(v&&+v.value===p.c)n++;});document.getElementById('nota').textContent='Nota: '+n+' / 5 '+(n===5?'★ ¡Archivos dominados!':n>=3?'Bien, repasa tar/find.':'Relee secciones 1-2.');}
+</script>
+</body>
+</html>

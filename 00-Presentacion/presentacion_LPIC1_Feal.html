@@ -1,0 +1,157 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>LPIC-1 · Presentación del curso · Feval</title>
+<style>
+@page{size:A4;margin:0}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#151515}
+.portada{background:#002855;color:#fff;border-bottom:8px solid #FDB913;padding:24px 32px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.portada .izq{display:flex;gap:16px;align-items:center}
+.logo{background:#fff;border-radius:12px;padding:8px 14px;display:flex;align-items:center;gap:10px}
+.logo img{height:52px;display:block}
+.logo .lname{font-size:13px;line-height:1.15;font-weight:800;color:#222}
+.portada h1{margin:0;font-size:21px}
+.portada h1 span{color:#FDB913}
+.portada p{margin:4px 0 0;color:#c9d4e3;font-size:13px}
+.cuerpo{padding:22px 32px;display:grid;gap:16px}
+.tarjeta{border:1px solid #ddd;border-top:6px solid #FDB913;border-radius:12px;padding:14px 18px;background:#fff;break-inside:avoid}
+.tarjeta h2{margin:0 0 10px;font-size:15px;text-transform:uppercase;letter-spacing:.04em;color:#002855}
+.tarjeta h3{margin:14px 0 6px;font-size:13px;background:#002855;color:#fff;display:inline-block;padding:4px 10px;border-radius:20px}
+.tarjeta h3 span{color:#FDB913}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;font-size:14px}
+.grid2 div{padding:6px 0;border-bottom:1px solid #eee}
+.grid2 b{display:block;font-size:12px;color:#666;text-transform:uppercase;letter-spacing:.05em}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin:4px 0 6px}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#eef2f7}
+td.hora{white-space:nowrap;text-align:right;font-variant-numeric:tabular-nums}
+.nota{font-size:12px;color:#555;margin:6px 0 0}
+ul.compacto{font-size:13px;margin:6px 0;padding-left:20px}
+ul.compacto li{margin:3px 0}
+.sesion{break-inside:avoid;page-break-inside:avoid}
+@media print{.sesion{break-inside:avoid;page-break-inside:avoid}
+.tarjeta{break-inside:auto}}
+.trainer{display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:center}
+.trainer img{width:170px;height:200px;object-fit:cover;border-radius:12px;border:3px solid #FDB913}
+.trainer .nombre{font-size:18px;font-weight:800;margin:0}
+.trainer .rol{color:#002855;font-weight:700;font-size:13px;margin:2px 0 8px}
+.trainer a{color:#004080;font-size:13px}
+.pie{background:#002855;color:#c9d4e3;font-size:11px;text-align:center;padding:12px;border-top:6px solid #FDB913}</style></head><body>
+<div class="portada">
+<div class="izq"><div class="logo"><img src="artefactos/lpi-icon.png" alt="LPI"><span class="lname">Linux<br>Professional<br>Institute</span></div>
+<div><h1><span>Curso 1: Linux LPIC-1</span> · Administración Linux — Incluye certificación</h1>
+<p>Telepresencial Webex · 19/10/2026 – 13/11/2026 · Feval</p></div></div>
+</div>
+<div class="cuerpo">
+<section class="tarjeta"><h2>Datos del curso</h2>
+<div class="grid2">
+<div><b>Curso</b>Curso 1: Linux LPIC-1. Incluye certificación (101-500 + 102-500, v5.0)</div>
+<div><b>Cliente</b>Feval</div>
+<div><b>Fechas</b>19/10/2026 – 13/11/2026</div>
+<div><b>Horario</b>17:00 – 20:00h (península)</div>
+<div><b>Duración</b>48 horas (16 sesiones × 3 h, lun–jue)</div>
+<div><b>Lugar de impartición</b>Telepresencial · Webex</div>
+</div>
+<p class="nota">Cámara recomendada, micro silenciado salvo intervención. Entrar 10 min antes con nombre real. Sesiones con chat y mano levantada.</p>
+</section>
+
+<section class="tarjeta"><h2>Trainer</h2>
+<div class="trainer">
+<img src="artefactos/trainer-ricardo.png" alt="Ricardo Martínez Romero en CPD">
+<div><p class="nombre">Ricardo Martínez Romero</p>
+<p class="rol">Certificado Linux Professional Institute LPIC-1 · LPIC-2 · DevOps Tools Engineer</p>
+<p style="margin:0;font-size:13px">Acompañamiento en aula Webex, laboratorios guiados por objetivo en Debian 13, Rocky 10 y Ubuntu 26.04 y repaso orientado a 101-500 / 102-500.</p>
+<p style="margin:8px 0 0"><a href="mailto:ricardo.martinez@cas-training.com">ricardo.martinez@cas-training.com</a><br>
+<a href="mailto:ricardo.instructor.formacion@gmail.com">ricardo.instructor.formacion@gmail.com</a></p></div>
+</div></section>
+</div>
+<div class="pie">Curso 1: Linux LPIC-1 · Feval · 19/10/2026 – 13/11/2026 · Material didáctico — LPI®/LPIC-1® marcas de Linux Professional Institute</div>
+</body></html><section class="tarjeta"><h2>Cronograma — solo temario (contenidos orientativos)</h2>
+<p class="nota"><b>Contenidos orientativos:</b> el orden y los tiempos por objetivo pueden ajustarse según el ritmo del aula.</p>
+<div class="sesion"><h3>S1 · lun 19/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>Infra + intro</td><td>Webex, VirtualBox + Extension Pack, importar Debian 12 / Rocky 9, snapshot base</td></tr>
+<tr><td>101.1 (w2)</td><td>Hardware: lspci, lsusb, lsmod, modprobe; /sys · /proc · /dev</td></tr></table></div>
+<div class="sesion"><h3>S2 · mar 20/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>101.2 (w3)</td><td>Arranque BIOS/UEFI → GRUB → kernel → initramfs → systemd; dmesg, journalctl</td></tr>
+<tr><td>101.3 (w3)</td><td>Runlevels/targets systemd, systemctl isolate, shutdown, wall</td></tr></table></div>
+<div class="sesion"><h3>S3 · mié 21/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>102.1 (w2)</td><td>Particionado: ESP, swap, LVM; MBR vs GPT</td></tr>
+<tr><td>102.2 (w2)</td><td>GRUB2: grub-mkconfig, instalación BIOS/UEFI, rescate</td></tr></table></div>
+<div class="sesion"><h3>S4 · jue 22/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>102.3 (w1)</td><td>Bibliotecas compartidas: ldd, ldconfig</td></tr>
+<tr><td>102.4 (w3) · 102.5 (w3)</td><td>dpkg/apt vs rpm/dnf; traductor de comandos en ambas VMs</td></tr></table></div>
+<div class="sesion"><h3>S5 · lun 26/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>102.6 (w1)</td><td>Linux virtualizado: VM vs contenedor, clonado</td></tr>
+<tr><td>103.1 (w4) · 103.2 (w2)</td><td>Bash, export, historial; filtros y tuberías</td></tr></table></div>
+<div class="sesion"><h3>S6 · mar 27/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>103.3 (w4)</td><td>Gestión de archivos: find, tar, globs</td></tr>
+<tr><td>103.4 (w4)</td><td>Redirecciones, tee, xargs, pipes</td></tr></table></div>
+<div class="sesion"><h3>S7 · mié 28/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>103.5 (w4) · 103.6 (w2)</td><td>Procesos ps/kill/nohup; prioridad nice</td></tr>
+<tr><td>103.7 (w3) · 103.8 (w3)</td><td>Regex BRE/ERE; edición con vi</td></tr></table></div>
+<div class="sesion"><h3>S8 · jue 29/10</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>104.1 (w2) · 104.2 (w2)</td><td>gdisk/mkfs en imagen loop; integridad fsck</td></tr>
+<tr><td>104.3 (w3)</td><td>Montaje: fstab (6 campos), UUID, mount/umount</td></tr></table></div>
+<div class="sesion"><h3>S9 · lun 2/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>104.5 (w3)</td><td>Permisos, propiedad, SUID/SGID/sticky, umask</td></tr>
+<tr><td>104.6 (w2) · 104.7 (w2)</td><td>Enlaces duros/simbólicos, inodos; FHS</td></tr></table></div>
+<div class="sesion"><h3>S10 · mar 3/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>105.1 (w4) · 105.2 (w4)</td><td>Entorno shell (login/no-login), alias; scripts, $?, shebang</td></tr>
+<tr><td>106.1 (w2)</td><td>X11 vs Wayland: servidor/cliente, DM/WM/DE</td></tr></table></div>
+<div class="sesion"><h3>S11 · mié 4/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>107.1 (w5)</td><td>Usuarios/grupos: passwd/shadow, chage, sudo (objetivo de mayor peso)</td></tr>
+<tr><td>107.2 (w4)</td><td>cron/at/systemd timers</td></tr></table></div>
+<div class="sesion"><h3>S12 · jue 5/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>107.3 (w3)</td><td>Localización: locale, timezone</td></tr>
+<tr><td>108.1 (w3)</td><td>Hora: RTC vs system clock, chrony, pool.ntp.org</td></tr></table></div>
+<div class="sesion"><h3>S13 · lun 9/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>108.2 (w4)</td><td>Logs: journalctl, rsyslog, logrotate</td></tr>
+<tr><td>108.3 (w3) · 108.4 (w2)</td><td>MTA: aliases/forward; impresión CUPS</td></tr></table></div>
+<div class="sesion"><h3>S14 · mar 10/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>109.1 (w4) · 109.2 (w4)</td><td>TCP/IP, CIDR, puertos; red persistente nmcli</td></tr>
+<tr><td>109.3 (w4) · 109.4 (w2)</td><td>Diagnóstico iproute2 vs net-tools; DNS cliente (resolv.conf, nsswitch)</td></tr></table></div>
+<div class="sesion"><h3>S15 · mié 11/11</h3>
+<table><tr><th>Objetivo</th><th>Temario</th></tr>
+<tr><td>110.1 (w3) · 110.2 (w3)</td><td>Auditoría, SUID/sudo, hardening host, nmap (solo localhost)</td></tr>
+<tr><td>110.3 (w4)</td><td>SSH, GPG, túneles y cifrado</td></tr></table></div>
+<p class="nota">Solo temario. Nota v5.0: el antiguo 104.4 (cuotas) está eliminado, no se imparte.</p>
+</section>
+
+<section class="tarjeta"><h2>Certificación LPIC-1 incluida</h2>
+<ul class="compacto">
+<li><b>Dos exámenes:</b> 101-500 (Temas 101–104) + 102-500 (Temas 105–110). Contenido propio que cubre los objetivos oficiales v5.0, sin redistribuir material LPI.</li>
+<li><b>Peso que más decide:</b> 103 (w26), 104 (w14), 109 (w14), 107.1 usuarios (w5, objetivo de mayor peso), 108.2 logs (w4).</li>
+<li><b>Formato LPI:</b> 60 preguntas / 90 min por examen (~1,5 min/pregunta). Fill-in-the-blank: solo comando base en minúsculas, sin rutas ni opciones.</li>
+</ul>
+</section>
+
+<section class="tarjeta"><h2>Infraestructura — VirtualBox + VMs del curso</h2>
+<p style="font-size:13px;margin:0">Preparación previa obligatoria (S1). Documentación completa incluida en este repo:</p>
+<ul class="compacto">
+<li><b>00-Presentacion/Infraestructura/01-instalarVirtualBox.pdf</b> — descarga oficial desde virtualbox.org, instalación en Windows (.exe) y GNU/Linux (apt/dnf), verificación SHA-256, Extension Pack (misma versión exacta), validación VT-x/AMD-V.</li>
+<li><b>00-Presentacion/Infraestructura/02-infraestructura.pdf</b> — virtualización: VM vs contenedor, hipervisor Tipo 1 (KVM, ESXi) vs Tipo 2 (VirtualBox), crear VM (RAM mín. 1024 MB, VDI dinámico 20 GB, ISO), importar OVA (Archivo → Importar servicio virtualizado).</li>
+</ul>
+<ul class="compacto">
+<li><b>Requisitos host:</b> CPU VT-x/AMD-V activo en BIOS/UEFI, 8 GB RAM recomendada, 20 GB libres, internet estable, admin/sudo.</li>
+<li><b>VMs facilitadas:</b> Debian 12 (apt) + Rocky 9 (dnf) ya instaladas vía .ova. Importar, ajustar RAM/CPU y red (NAT + interna), crear snapshot <b>base</b> antes de tocar nada.</li>
+<li><b>Regla de oro:</b> todo lo destructivo (<i>dd, mkfs, grub-install, fsck, shutdown, nmap</i>) SOLO en VM con snapshot. Si se rompe, se restaura y se sigue.</li>
+<li><b>Materiales del curso:</b> estructura 101/102 por objetivos, RESUMEN / EJERCICIOS / apps html offline, ENLACES-OFICIALES.</li>
+</ul>
+</section>
+
+</div>
+<div class="pie">Curso 1: Linux LPIC-1 · Feval · 19/10/2026 – 13/11/2026 · Material didáctico — LPI®/LPIC-1® marcas de Linux Professional Institute</div>
+</body></html>
